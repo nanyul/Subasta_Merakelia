@@ -9,12 +9,11 @@ class SubastaModel
         $this->enlace = new MySqlConnect();
     }
 
-    // ─────────────────────────────────────────────
+   
     // LISTADO DE SUBASTAS ACTIVAS (id_estado_subasta = 1)
     // Incluye: nombre del cuadro, imagen, fecha_inicio,
     //          fecha_fin, precio_base, incremento_minimo,
     //          cantidad_pujas (calculado)
-    // ─────────────────────────────────────────────
     public function getActivas()
     {
         $vSql = "SELECT
@@ -41,13 +40,12 @@ class SubastaModel
         return $vResultado ? $vResultado : [];
     }
 
-    // ─────────────────────────────────────────────
+    
     // LISTADO DE SUBASTAS FINALIZADAS/CANCELADAS
     // (id_estado_subasta IN (2, 3))
     // Incluye: objeto, imagen, fecha_fin (obligatorio),
     //          cantidad_pujas (obligatorio), estado (obligatorio),
     //          precio_base, incremento_minimo
-    // ─────────────────────────────────────────────
     public function getFinalizadas()
     {
         $vSql = "SELECT
@@ -74,14 +72,13 @@ class SubastaModel
         return $vResultado ? $vResultado : [];
     }
 
-    // ─────────────────────────────────────────────
+    
     // DETALLE DE UNA SUBASTA
     // Incluye toda la info del cuadro + datos de subasta
     // + cantidad_pujas (calculado)
-    // ─────────────────────────────────────────────
     public function getDetalle($id)
     {
-        // 1. Datos principales de la subasta y el cuadro
+        // Datos principales de la subasta y el cuadro
         $vSql = "SELECT
                     s.id,
                     s.fecha_inicio,
@@ -114,7 +111,7 @@ class SubastaModel
 
         $detalle = $vResultado[0];
 
-        // 2. Categorías del cuadro (subconsulta separada)
+        //  Categorías del cuadro (subconsulta separada)
         $vSqlCategorias = "SELECT cat.descripcion
                            FROM cuadro_subastable c
                            INNER JOIN subasta         s   ON s.id_cuadro   = c.id
@@ -128,11 +125,10 @@ class SubastaModel
         return $detalle;
     }
 
-    // ─────────────────────────────────────────────
     // HISTORIAL DE PUJAS de una subasta
     // Orden cronológico DESCENDENTE (más reciente primero)
     // Incluye: usuario, monto, fecha_hora
-    // ─────────────────────────────────────────────
+   
     public function getHistorialPujas($id_subasta)
     {
         // Validar que la subasta exista antes de devolver pujas
