@@ -15,7 +15,7 @@ class ImageModel
         return false;
     }
     //Obtener una imagen de una pelicula
-    public function getImageMovie($idMovie)
+    public function getImageCuadro($idMovie)
     {
         //Consulta sql
         $vSql = "SELECT i.id, i.datos, i.fecha_registro
@@ -26,7 +26,7 @@ class ImageModel
         //Ejecutar la consulta
         $vResultado = $this->enlace->ExecuteSQL($vSql);
         if (!empty($vResultado)) {
-            // Retornar el objeto
+            // Retornar el objeto en posición [0]
             return $vResultado[0];
         }
         return $vResultado;

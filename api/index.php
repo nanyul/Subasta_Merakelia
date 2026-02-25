@@ -25,6 +25,7 @@ require_once "models/UserModel.php";
 require_once "models/CuadrosModel.php";
 require_once "models/CategoriasModel.php";
 require_once "models/ImageModel.php";
+require_once "models/SubastaModel.php";
 
 /***--- Agregar todos los controladores*/
 require_once "controllers/UserController.php";
@@ -32,6 +33,7 @@ require_once "controllers/RolController.php";
 require_once "controllers/CuadrosController.php";
 require_once "controllers/CategoriasController.php";
 require_once "controllers/ImageController.php";
+require_once "controllers/SubastaController.php";
 
 
 //Enrutador

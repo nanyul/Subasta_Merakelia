@@ -26,16 +26,16 @@ class SubastaModel
                     s.precio_base,
                     s.incremento_minimo,
                     COUNT(p.id)            AS cantidad_pujas
-                 FROM subasta s
-                 INNER JOIN cuadro_subastable c  ON c.id = s.id_cuadro
-                 LEFT  JOIN cuadro_imagen     ci ON ci.id_cuadro = c.id
-                 LEFT  JOIN imagen            i  ON i.id = ci.id_imagen
-                 LEFT  JOIN puja              p  ON p.id_subasta = s.id
-                 WHERE s.id_estado_subasta = 1
-                 GROUP BY s.id, c.nombre, i.datos,
-                          s.fecha_inicio, s.fecha_fin,
-                          s.precio_base, s.incremento_minimo
-                 ORDER BY s.fecha_inicio DESC;";
+                    FROM subasta s
+                    INNER JOIN cuadro_subastable c  ON c.id = s.id_cuadro
+                    LEFT  JOIN cuadro_imagen     ci ON ci.id_cuadro = c.id
+                    LEFT  JOIN imagen            i  ON i.id = ci.id_imagen
+                    LEFT  JOIN puja              p  ON p.id_subasta = s.id
+                    WHERE s.id_estado_subasta = 1
+                    GROUP BY s.id, c.nombre, i.datos,
+                            s.fecha_inicio, s.fecha_fin,
+                            s.precio_base, s.incremento_minimo
+                    ORDER BY s.fecha_inicio DESC;";
 
         $vResultado = $this->enlace->ExecuteSQL($vSql);
         return $vResultado ? $vResultado : [];
@@ -156,4 +156,20 @@ class SubastaModel
         $vResultado = $this->enlace->ExecuteSQL($vSql);
         return $vResultado ? $vResultado : [];
     }
+
+    public function getSubastabyCuadro($id_cuadro)
+    {
+        $vSql = "SELECT
+                s.id,
+                s.fecha_inicio,
+                s.fecha_fin AS fecha_cierre,
+                es.descripcion AS estado_subasta
+                FROM subasta s
+                INNER JOIN estado_subasta es ON es.id = s.id_estado_subasta
+                WHERE s.id_cuadro = $id_cuadro";
+
+        $vResultado = $this->enlace->ExecuteSQL($vSql);
+        return $vResultado ? $vResultado : [];
+    }
+
 }
