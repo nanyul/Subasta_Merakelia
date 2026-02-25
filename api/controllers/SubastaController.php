@@ -7,9 +7,10 @@ class Subasta
     {
         $this->activas();
     }
-    
+    // ─────────────────────────────────────────────
     // GET /subastas/activas
     // Devuelve el listado de subastas activas
+    // ─────────────────────────────────────────────
     public function activas()
     {
         try {
@@ -23,9 +24,10 @@ class Subasta
         }
     }
 
-    
+    // ─────────────────────────────────────────────
     // GET /subastas/finalizadas
     // Devuelve el listado de subastas finalizadas y canceladas
+    // ─────────────────────────────────────────────
     public function finalizadas()
     {
         try {
@@ -39,9 +41,10 @@ class Subasta
         }
     }
 
-    
+    // ─────────────────────────────────────────────
     // GET /subastas/detalle/{id}
     // Devuelve el detalle completo de una subasta
+    // ─────────────────────────────────────────────
     public function detalle($param)
     {
         try {
@@ -55,10 +58,11 @@ class Subasta
         }
     }
 
-   
+    // ─────────────────────────────────────────────
     // GET /subastas/pujas/{id_subasta}
     // Devuelve el historial de pujas de una subasta
     // Validación: solo devuelve pujas del id_subasta dado
+    // ─────────────────────────────────────────────
     public function pujas($param)
     {
         try {
@@ -66,6 +70,7 @@ class Subasta
             $subasta  = new SubastaModel();
             $result   = $subasta->getHistorialPujas($param);
 
+            // Validación: si la subasta no existe, retornar error
             if ($result === null) {
                 $response->toJSON([
                     'error'   => true,
