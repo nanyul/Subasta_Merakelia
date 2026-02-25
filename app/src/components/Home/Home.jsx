@@ -21,7 +21,7 @@ export function Home() {
           Alquiler de Películas
         </h1>
         <p className="text-lg md:text-xl text-white/80 mb-6 drop-shadow">
-          Descubre y alquila tus películas favoritas por días.
+          Keylin
         </p>
         <div className="flex justify-center gap-4">
           <a

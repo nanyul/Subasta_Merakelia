@@ -45,12 +45,12 @@ class Subasta
     // GET /subastas/detalle/{id}
     // Devuelve el detalle completo de una subasta
     // ─────────────────────────────────────────────
-    public function detalle($param)
+    public function get($param)
     {
         try {
             $response = new Response();
             $subasta  = new SubastaModel();
-            $result   = $subasta->getDetalle($param);
+            $result   = $subasta->get($param);
             $response->toJSON($result);
         } catch (Exception $e) {
             $response->toJSON(null);

@@ -79,7 +79,7 @@ class SubastaModel
     // Incluye toda la info del cuadro + datos de subasta
     // + cantidad_pujas (calculado)
     // ─────────────────────────────────────────────
-    public function getDetalle($id)
+    public function get($id)
     {
         // 1. Datos principales de la subasta y el cuadro
         $vSql = "SELECT

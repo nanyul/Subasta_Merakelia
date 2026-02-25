@@ -14,36 +14,37 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Edit, Plus, Trash2, ArrowLeft } from "lucide-react";
-import MovieService from "@/services/MovieService";
+import { Edit, Plus, Trash2, ArrowLeft, BookUser} from "lucide-react";
 import { useEffect, useState } from "react";
 import { LoadingGrid } from "../ui/custom/LoadingGrid";
 import { ErrorAlert } from "../ui/custom/ErrorAlert";
 import { EmptyState } from "../ui/custom/EmptyState";
 
+//Services
+import UserService from "@/services/UserService";
+
 // Headers de la tabla
 //map = foreach
-const movieColumns = [
-
-    { key: "title", label: "Título" },
-    { key: "year", label: "Año" },
-    { key: "time", label: "Duración" },
+const userColumns = [
+    { key: "nombre", label: "Nombre" },
+    { key: "correo", label: "Correo" },
+    { key: "rol", label: "Rol" },
     { key: "actions", label: "Acciones" },
 ];
 
-export default function TableMovies() {
-    const [movies, setMovies] = useState([]);
+export default function TableUsers() {
+    const [users, setUsers] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     useEffect(() => {
         const fetchData = async () => {
         try {
-            const response = await MovieService.getMovies();
-            console.log(response)
-            const result = response.data;
-            console.log(result)
+            const response = await UserService.getUsers();//Llama servicio para obtener usuarios
+            console.log(response) //Lo muestra en al consola
+            const result = response.data; //Verificacion
+            console.log(result) //Lo muestra en al consola
             if (result.success) {
-                setMovies(result.data || []);
+                setUsers(result.data || []);
             } else {
                 setError(result.message || "Error desconocido");
             }
@@ -54,19 +55,18 @@ export default function TableMovies() {
         }
         };
         fetchData()
-    
     }, []);
 
     if (loading) return <LoadingGrid type="grid" />; 
-    if (error) return <ErrorAlert title="Error al cargar películas" message={error} />; 
-    if (movies.length === 0) 
-    return <EmptyState message="No se encontraron películas en esta tienda." />; 
+    if (error) return <ErrorAlert title="Error al cargar usuarios" message={error} />; 
+    if (users.length === 0) 
+    return <EmptyState message="No se encontraron usuarios en esta tienda." />; 
 
     return (
         <div className="container mx-auto py-8">
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold tracking-tight">
-                    Listado de Películas
+                    Listado de Usuarios
                 </h1>
                 <TooltipProvider>
                     <Tooltip>
@@ -88,7 +88,7 @@ export default function TableMovies() {
                         <TableRow>
                             {/* ()=>{} */}
                             {/* ()=>() */}
-                            {movieColumns.map((col)=>( 
+                            {userColumns.map((col)=>( 
                                 <TableHead key={col.key}  className="text-left font-semibold">
                                     {col.label}
                                 </TableHead>
@@ -96,18 +96,21 @@ export default function TableMovies() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {movies.map((movie)=>( 
-                            <TableRow key={movie.id}>
-                                <TableCell className="font-medium">{movie.title} </TableCell>
-                                <TableCell>{movie.year} </TableCell>
-                                <TableCell>{movie.time} min</TableCell>
+                        {/* foreach */}
+                        {users.map((user)=>( 
+                            <TableRow key={user.id}>
+                                <TableCell className="font-medium">{user.nombre} </TableCell>
+                                <TableCell>{user.correo} </TableCell>
+                                <TableCell>{user.rol} </TableCell>
                                 <TableCell className="flex justify-start items-center gap-1">
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Button variant="ghost" size="icon" >
-                                                    <Edit className="h-4 w-4 text-primary" />
-                                                </Button>
+                                                <Link to={`/movie/detail/${user.id}`}>
+                                                    <Button variant="ghost" size="icon" >
+                                                        <BookUser className="h-4 w-4 text-primary" />
+                                                    </Button>
+                                                </Link>
                                             </TooltipTrigger>
                                             <TooltipContent>Actualizar</TooltipContent>
                                         </Tooltip>

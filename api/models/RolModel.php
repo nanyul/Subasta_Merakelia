@@ -32,9 +32,9 @@ class RolModel
     public function getRolUser($idUser)
     {
         //Consulta sql
-        $vSql = "SELECT r.id,r.name
-            FROM rol r,user u 
-            where r.id=u.rol_id and u.id=$idUser";
+        $vSql = "SELECT r.id, r.descripcion
+            FROM rol r,usuario u 
+            where r.id=u.id_rol and u.id=$idUser";
 
         //Ejecutar la consulta
         $vResultado = $this->enlace->ExecuteSQL($vSql);

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import MovieService from '../../services/MovieService';
 import { ErrorAlert } from "../ui/custom/ErrorAlert";
 // Shadcn UI Components
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +17,9 @@ import {
 import { LoadingGrid } from '../ui/custom/LoadingGrid';
 import { EmptyState } from '../ui/custom/EmptyState';
 
+//Services
+import UserService from '../../services/UserService';
+
 export function DetailMovie() {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -28,7 +30,7 @@ export function DetailMovie() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await MovieService.getMovieById(id);
+                const response = await UserService.getUserById(id);
                 // Si la petición es exitosa, se guardan los datos
                 console.log(response.data)
                 setData(response.data);
@@ -82,77 +84,38 @@ export function DetailMovie() {
                         </h1>
                     </div>
 
-                    <Card>
-                        <CardContent className="p-6 space-y-6">
-                            {/* Información de director, duración e idioma en una sola fila */}
-                            <div className="flex flex-wrap items-center gap-x-10 gap-y-4">
-                                {/* Director */}
-                                <div className="flex items-center gap-4">
-                                    <User className="h-5 w-5 text-primary" />
-                                    <span className="font-semibold">Director:</span>
-                                    <p className="text-muted-foreground">
-                                        {movie.data.title}
-                                    </p>
-                                </div>
-                                {/* Duración */}
-                                <div className="flex items-center gap-4">
-                                    <Clock className="h-5 w-5 text-primary" />
-                                    <span className="font-semibold">Duración:</span>
-                                    <p className="text-muted-foreground">
-                                        {movie.data.time} min.
-                                    </p>
-                                </div>
-                                {/* Idioma */}
-                                <div className="flex items-center gap-4">
-                                    <Globe className="h-5 w-5 text-primary" />
-                                    <span className="font-semibold">Idioma:</span>
-                                    <p className="text-muted-foreground">
-                                    {movie.data.lang}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Contenedor de dos columnas para géneros y actores */}
-                            <div className="grid gap-4 md:grid-cols-2">
-                            {movie.data.genres && movie.data.genres.length > 0 && ( 
+                    {/* Sección de usuario bonito */}
+                    {movie.data && (
+                        <Card className="my-8">
+                            <CardContent className="p-6 space-y-4">
+                                <div className="flex flex-wrap gap-6 items-center">
+                                    <User className="h-8 w-8 text-primary" />
                                     <div>
-                                        <div className="flex items-center gap-4 mb-2">
-                                            <Film className="h-5 w-5 text-primary" />
-                                            <span className="font-semibold">Géneros:</span>
-                                        </div>
-                                        <div className="flex flex-col space-y-1">
-                                            
-                                                {movie.data.genres.map((genre)=>(
-                                                <div key={genre.id}  className="flex items-center gap-2 py-1 px-2 text-sm">
-                                                    <ChevronRight className="h-4 w-4 text-secondary" />
-                                                    <span className="text-muted-foreground">
-                                                        {genre.title}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <span className="font-bold text-lg">{movie.data.nombre}</span>
+                                        <Badge className="ml-2" variant="outline">{movie.data.rol}</Badge>
                                     </div>
-                                )}
-
-                                {movie.data.actors && movie.data.actors.length > 0 && (
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 mt-4">
                                     <div>
-                                        <div className="flex items-center gap-4 mb-2">
-                                            <Star className="h-5 w-5 text-primary" />
-                                            <span className="font-semibold">Actores Principales:</span>
-                                        </div>
-                                        <div className="flex flex-col space-y-1">
-                                        
-                                                <div  className="flex items-center gap-2 py-1 px-2 text-sm">
-                                                    <Star className="h-4 w-4 text-secondary" />
-                                                    <span className="text-muted-foreground"> </span>
-                                                </div>
-                                        
-                                        </div>
+                                        <span className="font-semibold">Correo:</span>
+                                        <p className="text-muted-foreground">{movie.data.correo}</p>
                                     </div>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
+                                    <div>
+                                        <span className="font-semibold">Estado:</span>
+                                        <p className="text-muted-foreground">{movie.data.estado}</p>
+                                    </div>
+                                    <div>
+                                        <span className="font-semibold">Cantidad de Pujas:</span>
+                                        <p className="text-muted-foreground">{movie.data.cantidad_pujas}</p>
+                                    </div>
+                                    <div>
+                                        <span className="font-semibold">Fecha de Registro:</span>
+                                        <p className="text-muted-foreground">{movie.data.fecha_registro}</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
             <Button

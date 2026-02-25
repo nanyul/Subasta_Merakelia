@@ -36,6 +36,7 @@ require_once "controllers/ImageController.php";
 require_once "controllers/SubastaController.php";
 
 
+
 //Enrutador
 require_once "routes/RoutesController.php";
 $index = new RoutesController();

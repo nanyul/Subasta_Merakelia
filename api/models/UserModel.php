@@ -12,7 +12,7 @@ class UserModel
 	public function all()
 	{
 		//Consulta sql
-		$vSql = "SELECT u.nombre, u.correo, u.id_rol,
+		$vSql = "SELECT u.nombre, u.correo, u.id_rol, u.id,
 			IF(u.estado = 1, 'Activo', 'Inactivo') AS estado
 				FROM usuario u;";
 		//Ejecutar la consulta
@@ -43,18 +43,17 @@ class UserModel
 		//Ejecutar la consulta
 		$vResultado = $this->enlace->ExecuteSQL($vSql);
 		if ($vResultado) {
-			$vResultado = $vResultado[0];
+			$vNResultado = $vResultado[0];
 			$rol = $rolM->getRolUser($id);
-			$vResultado->rol = $rol->descripcion;
+			$vNResultado->rol = $rol->descripcion;
 
-		if ($vResultado->id_rol == 2) {
-			$vResultado->cantidad_subastas = $this->CantidadSubastas($id);
-		} elseif ($vResultado->id_rol == 1) {
-			$vResultado->cantidad_pujas = $this->CantidadPujas($id);
-		}
-
+			if ($vNResultado->id_rol == 2) {
+				$vNResultado->cantidad_subastas = $this->CantidadSubastas($id);
+			} elseif ($vNResultado->id_rol == 1) {
+				$vNResultado->cantidad_pujas = $this->CantidadPujas($id);
+			}
 			// Retornar el objeto
-			return $vResultado;
+			return $vNResultado;
 		} else {
 			return null;
 		}
@@ -85,6 +84,4 @@ class UserModel
 			return 0;
 		}
 	}
-
-
 }

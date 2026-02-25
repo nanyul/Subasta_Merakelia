@@ -6,7 +6,6 @@ import { Layout } from './components/Layout/Layout'
 import { Home } from './components/Home/Home'
 import { PageNotFound } from './components/Home/PageNotFound'
 import TableMovies from './components/Movie/TableMovies'
-import { ListMovies } from './components/Movie/ListMovies'
 import { DetailMovie } from './components/Movie/DetailMovie'
 
 const rutas = createBrowserRouter([
@@ -20,9 +19,7 @@ const rutas = createBrowserRouter([
       { path: "*", element: <PageNotFound /> },
        //Rutas componentes
       {path:"movie/table", element: <TableMovies/>},
-      {path:"movie", element: <ListMovies/>},
       {path:"movie/detail/:id", element: <DetailMovie />}
-
     ]
   }
 ])
