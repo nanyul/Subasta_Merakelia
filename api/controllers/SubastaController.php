@@ -1,12 +1,28 @@
 <?php
-
 class Subasta
 {
-
     public function index()
     {
-        $this->activas();
+        $this->all();
     }
+
+    // ─────────────────────────────────────────────
+    // GET /subastas
+    // Devuelve todas las subastas (activas + finalizadas)
+    // ─────────────────────────────────────────────
+    public function all()
+    {
+        try {
+            $response = new Response();
+            $subasta  = new SubastaModel();
+            $result   = $subasta->all();
+            $response->toJSON($result);
+        } catch (Exception $e) {
+            $response->toJSON(null);
+            handleException($e);
+        }
+    }
+
     // ─────────────────────────────────────────────
     // GET /subastas/activas
     // Devuelve el listado de subastas activas
@@ -51,6 +67,14 @@ class Subasta
             $response = new Response();
             $subasta  = new SubastaModel();
             $result   = $subasta->get($param);
+            // Validación: si la subasta no existe, retornar error
+            if ($result === null) {
+                $response->toJSON([
+                    'error'   => true,
+                    'mensaje' => 'Subasta no encontrada.'
+                ]);
+                return;
+            }
             $response->toJSON($result);
         } catch (Exception $e) {
             $response->toJSON(null);
@@ -61,7 +85,6 @@ class Subasta
     // ─────────────────────────────────────────────
     // GET /subastas/pujas/{id_subasta}
     // Devuelve el historial de pujas de una subasta
-    // Validación: solo devuelve pujas del id_subasta dado
     // ─────────────────────────────────────────────
     public function pujas($param)
     {
@@ -69,7 +92,6 @@ class Subasta
             $response = new Response();
             $subasta  = new SubastaModel();
             $result   = $subasta->getHistorialPujas($param);
-
             // Validación: si la subasta no existe, retornar error
             if ($result === null) {
                 $response->toJSON([
@@ -78,7 +100,6 @@ class Subasta
                 ]);
                 return;
             }
-
             $response->toJSON($result);
         } catch (Exception $e) {
             $response->toJSON(null);
