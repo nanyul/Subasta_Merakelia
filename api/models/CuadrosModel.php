@@ -30,9 +30,9 @@ class CuadrosModel
                     // Convertir array de categorías a array de descripciones
                     $cuadro->categorias = array_column($categorias ?: [], 'descripcion');
 
-                    //para obtener la imagen en posición [0] (primera) del array resultado de getImageCuadro
-                    $cuadro=$cuadro[0];
                     $cuadro->imagen = $imageM->getImageCuadro($cuadro->id);
+                        //para obtener la imagen en posición [0] (primera) del array resultado de getImageCuadro
+                        $cuadro->imagen = $imageM->getImageCuadro($cuadro->id);
                 }
             }
         }
