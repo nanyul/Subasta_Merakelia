@@ -15,13 +15,13 @@ class ImageModel
         return false;
     }
     //Obtener una imagen de una pelicula
-    public function getImageCuadro($idMovie)
+    public function getImageCuadro($idCuadro)
     {
         //Consulta sql
         $vSql = "SELECT i.id, i.datos, i.fecha_registro
                 FROM imagen i
-                JOIN cuadro_imagen c ON c.id_cuadro = $idMovie
-                where i.id = c.id_imagen;";
+                JOIN cuadro_imagen c ON c.id_cuadro = $idCuadro
+                WHERE i.id = c.id_imagen;";
 
         //Ejecutar la consulta
         $vResultado = $this->enlace->ExecuteSQL($vSql);
