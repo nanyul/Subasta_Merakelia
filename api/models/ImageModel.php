@@ -31,4 +31,17 @@ class ImageModel
         }
         return $vResultado;
     }
+
+    //Obtener todas las imágenes de un cuadro
+    public function getAllImagesCuadro($idCuadro)
+    {
+        $idCuadro = intval($idCuadro);
+        $vSql = "SELECT i.id, i.datos, i.fecha_registro
+                FROM imagen i
+                JOIN cuadro_imagen c ON c.id_cuadro = $idCuadro
+                WHERE i.id = c.id_imagen;";
+
+        $vResultado = $this->enlace->ExecuteSQL($vSql);
+        return !empty($vResultado) ? $vResultado : [];
+    }
 }

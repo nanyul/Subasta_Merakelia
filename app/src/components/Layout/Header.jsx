@@ -46,13 +46,13 @@ const navItems = [
 
 const mantItems = [
  {
-      title: "Películas",
-      href: "movie/table",
+      title: "Usuarios",
+      href: "/user",
       icon: <Wrench className="h-4 w-4" />,
     },
     {
-      title: "Alquileres",
-      href: "rental",
+      title: "Cuadros Subastables",
+      href: "/CuadrosSubastables/galeria",
       icon: <ShoppingBasket className="h-4 w-4" />,
     },
     {
