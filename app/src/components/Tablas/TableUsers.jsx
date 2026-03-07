@@ -27,13 +27,14 @@ import UserService from "@/services/UserService";
 //map = foreach
 const userColumns = [
     { key: "nombre", label: "Nombre" },
-    { key: "correo", label: "Correo" },
     { key: "rol", label: "Rol" },
+    { key: "estado", label: "Estado" },
     { key: "actions", label: "Acciones" },
 ];
 
+//Funcion traer datos de usuarios
 export default function TableUsers() {
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState([]); //Array para almacenar usuarios
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     useEffect(() => {
@@ -62,6 +63,7 @@ export default function TableUsers() {
     if (users.length === 0) 
     return <EmptyState message="No se encontraron usuarios en esta tienda." />; 
 
+    //Diseño tabla y foreach para mostrar usuarios
     return (
         <div className="container mx-auto py-8">
             <div className="flex items-center justify-between mb-6">
@@ -72,12 +74,12 @@ export default function TableUsers() {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button asChild variant="outline" size="icon" className="text-primary">
-                                <Link to="/movie/create">
+                                <Link to="/user/create">
                                     <Plus className="h-4 w-4" />
                                 </Link>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Crear película</TooltipContent>
+                        <TooltipContent>Crear usuario</TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
             </div>
@@ -100,15 +102,27 @@ export default function TableUsers() {
                         {users.map((user)=>( 
                             <TableRow key={user.id}>
                                 <TableCell className="font-medium">{user.nombre} </TableCell>
-                                <TableCell>{user.correo} </TableCell>
                                 <TableCell>{user.rol} </TableCell>
+                                <TableCell>{user.estado} </TableCell>
                                 <TableCell className="flex justify-start items-center gap-1">
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Link to={`/movie/detail/${user.id}`}>
+                                                <Link to={`/user/${user.id}`}>
                                                     <Button variant="ghost" size="icon" >
                                                         <BookUser className="h-4 w-4 text-primary" />
+                                                    </Button>
+                                                </Link>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Detalle Usuario</TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Link to={`/user/detail/${user.id}`}>
+                                                    <Button variant="ghost" size="icon" >
+                                                        <Edit className="h-4 w-4 text-primary" />
                                                     </Button>
                                                 </Link>
                                             </TooltipTrigger>

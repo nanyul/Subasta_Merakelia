@@ -16,8 +16,10 @@ class CuadrosModel
             WHEN 2 THEN 'Reservado'
             ELSE 'Retirado'
         END AS estado_cuadro,
-        IF(c.id_estado_condicion = 1, 'Nuevo', 'Usado') AS estado_condicion
-        FROM cuadro_subastable c;";
+        IF(c.id_estado_condicion = 1, 'Nuevo', 'Usado') AS estado_condicion,
+        u.nombre AS nombre_dueno
+        FROM cuadro_subastable c
+        INNER JOIN usuario u ON u.id = c.id_usuario;";
 
         //vResultado es un array de objetos = JSON
         $vResultado = $this->enlace->ExecuteSQL($vSql);
@@ -49,8 +51,10 @@ class CuadrosModel
             WHEN 2 THEN 'Reservado'
             ELSE 'Retirado'
         END AS estado_cuadro,
-        IF(c.id_estado_condicion = 1, 'Nuevo', 'Usado') AS estado_condicion
+        IF(c.id_estado_condicion = 1, 'Nuevo', 'Usado') AS estado_condicion,
+        u.nombre AS nombre_dueno
         FROM cuadro_subastable c
+        INNER JOIN usuario u ON u.id = c.id_usuario
         WHERE c.id = $id";
 
         //vResultado es un array de objetos = JSON
@@ -65,6 +69,7 @@ class CuadrosModel
                     // Convertir array de categorías a array de descripciones
                     $cuadro->categorias = array_column($categorias ?: [], 'descripcion');
                     $cuadro->imagen = $imageM->getImageCuadro($cuadro->id);
+                    $cuadro->imagenes = $imageM->getAllImagesCuadro($cuadro->id);
 
                     $cuadro->subasta = $subastaM->getSubastabyCuadro($cuadro->id);
                 }
