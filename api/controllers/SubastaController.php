@@ -6,10 +6,8 @@ class Subasta
         $this->all();
     }
 
-    // ─────────────────────────────────────────────
-    // GET /subastas
+
     // Devuelve todas las subastas (activas + finalizadas)
-    // ─────────────────────────────────────────────
     public function all()
     {
         try {
@@ -23,10 +21,7 @@ class Subasta
         }
     }
 
-    // ─────────────────────────────────────────────
-    // GET /subastas/activas
     // Devuelve el listado de subastas activas
-    // ─────────────────────────────────────────────
     public function activas()
     {
         try {
@@ -40,10 +35,8 @@ class Subasta
         }
     }
 
-    // ─────────────────────────────────────────────
-    // GET /subastas/finalizadas
+  
     // Devuelve el listado de subastas finalizadas y canceladas
-    // ─────────────────────────────────────────────
     public function finalizadas()
     {
         try {
@@ -57,10 +50,9 @@ class Subasta
         }
     }
 
-    // ─────────────────────────────────────────────
+    
     // GET /subastas/detalle/{id}
     // Devuelve el detalle completo de una subasta
-    // ─────────────────────────────────────────────
     public function get($param)
     {
         try {
@@ -82,10 +74,9 @@ class Subasta
         }
     }
 
-    // ─────────────────────────────────────────────
+    
     // GET /subastas/pujas/{id_subasta}
     // Devuelve el historial de pujas de una subasta
-    // ─────────────────────────────────────────────
     public function pujas($param)
     {
         try {

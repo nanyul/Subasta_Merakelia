@@ -29,7 +29,13 @@ export function Home() {
             className="px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-lg hover:bg-primary/90 transition"
           >
             Ver Catálogo
-          </a> 
+          </a>
+          <a
+            href="/subastas"
+            className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold shadow-lg hover:bg-green-700 transition"
+          >
+            Ver Subastas
+          </a>
           <a
             href="/user/login"
             className="px-6 py-3 bg-secondary text-white rounded-lg font-semibold shadow-lg hover:bg-secondary/90 transition"

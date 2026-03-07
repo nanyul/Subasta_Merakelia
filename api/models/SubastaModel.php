@@ -14,10 +14,15 @@ class SubastaModel
     // Retorna un array con dos claves: 'activas' y 'finalizadas'
     public function all()
     {
-        return [
-            'activas'     => $this->getActivas(),
-            'finalizadas' => $this->getFinalizadas()
-        ];
+        // return [
+        //     'activas'     => $this->getActivas(),
+        //     'finalizadas' => $this->getFinalizadas()
+        // ];
+
+        $activas = $this->getActivas();
+        $finalizadas = $this->getFinalizadas();
+
+        return array_merge($activas, $finalizadas);
     }
 
     
