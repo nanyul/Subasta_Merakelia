@@ -21,7 +21,7 @@ class SubastaService {
     }
 
     getHistorialPujas(id) {
-        return axios.get(BASE_URL + "/" + id + "/pujas");
+        return axios.get(BASE_URL + "/" + "pujas/" + id);
     }
 
 }

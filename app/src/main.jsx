@@ -5,9 +5,15 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Layout } from './components/Layout/Layout'
 import { Home } from './components/Home/Home'
 import { PageNotFound } from './components/Home/PageNotFound'
-import TableMovies from './components/Movie/TableMovies'
-import { DetailMovie } from './components/Movie/DetailMovie'
-
+//Rutas
+import TableUser from './components/Tablas/TableUsers'
+import { DetailUser } from './components/Tablas/DetailUser'
+import TableCuadros from './components/Tablas/TableCuadros'
+import { DetailCuadro } from './components/Tablas/DetailCuadros'
+import { ListCuadros } from './components/Tablas/ListCuadros'
+import  TableSubastas  from './components/Tablas/TableSubastas'
+import { DetailSubasta } from './components/Tablas/DetailSubasta'
+import { HistorialPujas } from './components/Tablas/HistorialPujas'
 const rutas = createBrowserRouter([
   {
     element: <Layout/>,
@@ -18,8 +24,16 @@ const rutas = createBrowserRouter([
       // Ruta comodín (404)
       { path: "*", element: <PageNotFound /> },
        //Rutas componentes
-      {path:"movie/table", element: <TableMovies/>},
-      {path:"movie/detail/:id", element: <DetailMovie />}
+      {path:"user", element: <TableUser/>},
+      {path:"user/:id", element: <DetailUser />},
+      //Cuadros components
+      {path:"CuadrosSubastables", element: <TableCuadros/>},
+      {path:"CuadrosSubastables/:id", element: <DetailCuadro/>},
+      {path:"CuadrosSubastables/galeria", element: <ListCuadros/>},
+      //Subastas components
+      {path:"Subastas",element: <TableSubastas/>},
+      {path:"subasta/:id", element: <DetailSubasta /> },
+      {path:"subasta/pujas/:id", element: <HistorialPujas />},
     ]
   }
 ])

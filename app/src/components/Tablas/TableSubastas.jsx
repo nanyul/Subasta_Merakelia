@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
     Table,
     TableHeader,
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 import {
     Tooltip,
@@ -17,7 +18,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { Eye, ArrowLeft } from "lucide-react";
+import { Eye, ArrowLeft, ImageIcon, Gavel } from "lucide-react";
 
 import { useEffect, useState } from "react";
 
@@ -28,8 +29,6 @@ import { EmptyState } from "../ui/custom/EmptyState";
 // Service
 import SubastaService from "@/services/SubastaService";
 
-
-// Columnas
 const subastaColumns = [
     { key: "imagen", label: "Imagen" },
     { key: "objeto", label: "Objeto" },
@@ -42,11 +41,18 @@ const subastaColumns = [
 ];
 
 export default function TableSubastas() {
+    const navigate = useNavigate();
+    const BASE_URL = import.meta.env.VITE_BASE_URL + "uploads";
 
     const [subastas, setSubastas] = useState([]);
     const [filtro, setFiltro] = useState("todas");
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    // Formatear precio
+    const formatPrice = (price) => {
+        return `$ ${Number(price).toFixed(2)}`;
+    };
 
     useEffect(() => {
 
@@ -55,7 +61,6 @@ export default function TableSubastas() {
             try {
 
                 const response = await SubastaService.getAllSubastas();
-
                 const result = response.data;
 
                 if (result.success) {
@@ -90,10 +95,12 @@ export default function TableSubastas() {
             return s.estado === "Finalizada";
         }
 
+        if (filtro === "canceladas") {
+            return s.estado === "Cancelada";
+        }
+
         return true;
-
     });
-
 
     if (loading) return <LoadingGrid type="grid" />;
 
@@ -103,12 +110,13 @@ export default function TableSubastas() {
     if (subastasFiltradas.length === 0)
         return <EmptyState message="No hay subastas disponibles." />;
 
-
     return (
 
         <div className="container mx-auto py-8">
 
-            <div className="flex items-center justify-between mb-6">
+            {/* HEADER */}
+
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
 
                 <h1 className="text-3xl font-bold tracking-tight">
                     Listado de Subastas
@@ -116,38 +124,51 @@ export default function TableSubastas() {
 
                 {/* FILTROS */}
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 bg-muted p-1 rounded-lg">
 
-                    <Button
+                    <Badge
                         variant={filtro === "todas" ? "default" : "outline"}
+                        className="cursor-pointer px-4 py-1"
                         onClick={() => setFiltro("todas")}
                     >
                         Todas
-                    </Button>
+                    </Badge>
 
-                    <Button
+                    <Badge
                         variant={filtro === "activas" ? "default" : "outline"}
+                        className="cursor-pointer px-4 py-1"
                         onClick={() => setFiltro("activas")}
                     >
                         Activas
-                    </Button>
+                    </Badge>
 
-                    <Button
+                    <Badge
                         variant={filtro === "finalizadas" ? "default" : "outline"}
+                        className="cursor-pointer px-4 py-1"
                         onClick={() => setFiltro("finalizadas")}
                     >
                         Finalizadas
-                    </Button>
+                    </Badge>
+
+                    <Badge
+                        variant={filtro === "canceladas" ? "default" : "outline"}
+                        className="cursor-pointer px-4 py-1"
+                        onClick={() => setFiltro("canceladas")}
+                    >
+                        Canceladas
+                    </Badge>
 
                 </div>
 
             </div>
 
-            <div className="rounded-md border">
+            {/* TABLA */}
+
+            <div className="rounded-md border shadow-sm">
 
                 <Table>
 
-                    <TableHeader className="bg-primary/50">
+                    <TableHeader className="bg-primary/10">
 
                         <TableRow>
 
@@ -155,7 +176,7 @@ export default function TableSubastas() {
 
                                 <TableHead
                                     key={col.key}
-                                    className="text-left font-semibold"
+                                    className="font-semibold"
                                 >
                                     {col.label}
                                 </TableHead>
@@ -176,11 +197,21 @@ export default function TableSubastas() {
 
                                 <TableCell>
 
-                                    <img
-                                        src={`${import.meta.env.VITE_BASE_URL}images/${subasta.imagen?.datos}`}
-                                        alt={subasta.objeto}
-                                        className="w-16 h-16 object-cover rounded"
-                                    />
+                                    {subasta.imagen?.datos ? (
+
+                                        <img
+                                            src={`${BASE_URL}/${subasta.imagen.datos}`}
+                                            alt={subasta.objeto}
+                                            className="w-16 h-16 object-cover rounded-md border"
+                                        />
+
+                                    ) : (
+
+                                        <div className="w-16 h-16 bg-muted flex items-center justify-center rounded-md">
+                                            <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                                        </div>
+
+                                    )}
 
                                 </TableCell>
 
@@ -209,7 +240,7 @@ export default function TableSubastas() {
                                 {/* PRECIO */}
 
                                 <TableCell>
-                                    ${subasta.precio_base}
+                                    {formatPrice(subasta.precio_base)}
                                 </TableCell>
 
 
@@ -224,22 +255,30 @@ export default function TableSubastas() {
 
                                 <TableCell>
 
-                                    {subasta.estado ? (
+                                    {subasta.estado === "Finalizada" && (
                                         <span className="text-red-500 font-medium">
-                                            {subasta.estado}
+                                            Finalizada
                                         </span>
-                                    ) : (
+                                    )}
+
+                                    {subasta.estado === "Cancelada" && (
+                                        <span className="text-red-500 font-medium">
+                                            Cancelada
+                                        </span>
+                                    )}
+
+                                    {!subasta.estado || subasta.estado === "Activa" ? (
                                         <span className="text-green-600 font-medium">
                                             Activa
                                         </span>
-                                    )}
+                                    ) : null}
 
                                 </TableCell>
 
 
                                 {/* ACCIONES */}
 
-                                <TableCell className="flex gap-1">
+                                <TableCell>
 
                                     <TooltipProvider>
 
@@ -248,7 +287,7 @@ export default function TableSubastas() {
                                             <TooltipTrigger asChild>
 
                                                 <Link
-                                                    to={`/subasta/detail/${subasta.id}`}
+                                                    to={`/subasta/${subasta.id}`}
                                                 >
 
                                                     <Button
@@ -271,7 +310,35 @@ export default function TableSubastas() {
                                         </Tooltip>
 
                                     </TooltipProvider>
+                                    
 
+                                      {/* VER HISTORIAL DE PUJAS */}
+
+        <TooltipProvider>
+
+            <Tooltip>
+
+                <TooltipTrigger asChild>
+
+                    <Link to={`/subasta/pujas/${subasta.id}`}>
+
+                        <Button variant="ghost" size="icon">
+
+                            <Gavel className="h-4 w-4 text-amber-600" />
+
+                        </Button>
+
+                    </Link>
+
+                </TooltipTrigger>
+
+                <TooltipContent>
+                    Ver historial de pujas
+                </TooltipContent>
+
+            </Tooltip>
+
+        </TooltipProvider>
                                 </TableCell>
 
                             </TableRow>
@@ -284,18 +351,17 @@ export default function TableSubastas() {
 
             </div>
 
+            {/* BOTÓN REGRESAR */}
+
             <Button
                 type="button"
+                onClick={() => navigate(-1)}
                 className="flex items-center gap-2 bg-accent text-white hover:bg-accent/90 mt-6"
             >
-
                 <ArrowLeft className="w-4 h-4" />
-
                 Regresar
-
             </Button>
-
         </div>
-
     );
 }
+
