@@ -45,10 +45,10 @@ export default function Header() {
   ];
 
   const cuadroItems = [
-    { title: "Cuadros Subastables", href: "/cuadros", icon: <Film className="h-4 w-4" /> },
+    { title: "Cuadros Subastables", href: "/CuadrosSubastables/galeria", icon: <Film className="h-4 w-4" /> },
     {
       title: "Filtrar Cuadros",
-      href: "/cuadros/filter",
+      href: "/CuadrosSubastables/filter",
       icon: <Filter className="h-4 w-4" />,
     },
   ];
@@ -61,7 +61,7 @@ export default function Header() {
     },
     {
       title: "Cuadros Subastables",
-      href: "/CuadrosSubastables/galeria",
+      href: "/CuadrosSubastables",
       icon: <ShoppingBasket className="h-4 w-4" />,
     }
   ];
@@ -96,7 +96,10 @@ export default function Header() {
             
             {/* Subastas */}
             <MenubarMenu>
-              <MenubarTrigger className="font-medium flex items-center gap-1 hover:text-secondary transition" style={{ color: '#F2E199' }}>
+              <MenubarTrigger
+                className="font-medium flex items-center gap-1 hover:text-secondary transition focus:bg-[#194174] data-[state=open]:bg-[#194174]"
+                style={{ color: '#F2E199' }}
+              >
                 <HandCoins className="h-4 w-4" /> Subastas
                 <ChevronDown className="h-3 w-3" />
               </MenubarTrigger>
@@ -105,9 +108,8 @@ export default function Header() {
                   <MenubarItem key={item.href} asChild>
                     <Link
                       to={item.href}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm hover:bg-accent/10 transition"
+                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199]"
                     >
-
                       {item.icon} {item.title}
                     </Link>
                   </MenubarItem>
@@ -117,7 +119,10 @@ export default function Header() {
 
             {/* Cuadros */}
             <MenubarMenu>
-              <MenubarTrigger className="font-medium flex items-center gap-1 hover:text-secondary transition" style={{ color: '#F2E199' }}>
+              <MenubarTrigger
+                className="font-medium flex items-center gap-1 hover:text-secondary transition focus:bg-[#194174] data-[state=open]:bg-[#194174]"
+                style={{ color: '#F2E199' }}
+              >
                 <Palette className="h-4 w-4" /> Cuadros
                 <ChevronDown className="h-3 w-3" />
               </MenubarTrigger>
@@ -126,7 +131,7 @@ export default function Header() {
                   <MenubarItem key={item.href} asChild>
                     <Link
                       to={item.href}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm hover:bg-accent/10 transition"
+                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199]"
                     >
                       {item.icon} {item.title}
                     </Link>
@@ -137,7 +142,10 @@ export default function Header() {
 
             {/* Mantenimientos */}
             <MenubarMenu>
-              <MenubarTrigger className="font-medium flex items-center gap-1 hover:text-secondary transition" style={{ color: '#F2E199' }}>
+              <MenubarTrigger
+                className="font-medium flex items-center gap-1 hover:text-secondary transition focus:bg-[#194174] data-[state=open]:bg-[#194174]"
+                style={{ color: '#F2E199' }}
+              >
                 <Layers className="h-4 w-4" /> Mantenimientos
                 <ChevronDown className="h-3 w-3" />
               </MenubarTrigger>
@@ -146,7 +154,7 @@ export default function Header() {
                   <MenubarItem key={item.href} asChild>
                     <Link
                       to={item.href}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm hover:bg-accent/10 transition"
+                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199]"
                     >
                       {item.icon} {item.title}
                     </Link>
@@ -157,7 +165,10 @@ export default function Header() {
 
             {/* Usuario */}
             <MenubarMenu>
-              <MenubarTrigger className="font-medium flex items-center gap-1 hover:text-secondary transition" style={{ color: '#F2E199' }}>
+              <MenubarTrigger
+                className="font-medium flex items-center gap-1 hover:text-secondary transition focus:bg-[#194174] data-[state=open]:bg-[#194174]"
+                style={{ color: '#F2E199' }}
+              >
                 <User className="h-4 w-4" /> {userEmail}
                 <ChevronDown className="h-3 w-3" />
               </MenubarTrigger>
@@ -166,7 +177,7 @@ export default function Header() {
                   <MenubarItem key={item.href} asChild>
                     <Link
                       to={item.href}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm hover:bg-accent/10 transition"
+                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199]"
                     >
                       {item.icon} {item.title}
                     </Link>
@@ -196,7 +207,7 @@ export default function Header() {
                 {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="bg-accent/10 transition text-white backdrop-blur-lg w-72">
+            <SheetContent side="left" className="bg-accent/10 text-[#F2E199] transition backdrop-blur-lg w-72">
               <nav className="mt-8 px-4 space-y-6">
                 <div>
                   <Link to="/" className="flex items-center gap-2 text-lg font-semibold">
@@ -213,7 +224,7 @@ export default function Header() {
                       key={item.href}
                       to={item.href}
                       onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-white/90 hover:bg-white/10 transition"
+                      className="flex items-center gap-2 py-2 px-3 rounded-md text-[#F2E199] hover:bg-white/10 transition"
                     >
                       {item.icon} {item.title}
                     </Link>
@@ -229,7 +240,7 @@ export default function Header() {
                       key={item.href}
                       to={item.href}
                       onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-white/90 hover:bg-white/10 transition"
+                      className="flex items-center gap-2 py-2 px-3 rounded-md text-[#F2E199] hover:bg-white/10 transition"
                     >
                       {item.icon} {item.title}
                     </Link>
@@ -245,7 +256,7 @@ export default function Header() {
                       key={item.href}
                       to={item.href}
                       onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-white/90 hover:bg-white/10 transition"
+                      className="flex items-center gap-2 py-2 px-3 rounded-md text-[#F2E199] hover:bg-white/10 transition"
                     >
                       {item.icon} {item.title}
                     </Link>

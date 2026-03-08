@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { LoadingGrid } from "../ui/custom/LoadingGrid";
 import { ErrorAlert } from "../ui/custom/ErrorAlert";
 import { EmptyState } from "../ui/custom/EmptyState";
+import fondoTabla from "@/assets/fondoTabla.png";
 
 //Services
 import CuadrosService from "@/services/CuadrosService";
@@ -45,9 +46,7 @@ export default function TableCuadros() {
         const fetchData = async () => {
             try {
                 const response = await CuadrosService.getCuadros();
-                console.log(response)
                 const result = response.data;
-                console.log(result)
                 if (result.success) {
                     setCuadros(result.data || []);
                 } else {
@@ -67,111 +66,154 @@ export default function TableCuadros() {
     if (cuadros.length === 0)
         return <EmptyState message="No se encontraron cuadros en esta tienda." />;
 
-    return (
-        <div className="container mx-auto py-8">
-            <div className="flex items-center justify-between mb-6">
-                <h1 className="text-3xl font-bold tracking-tight">
-                    Listado de Cuadros Subastables
-                </h1>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button asChild variant="outline" size="icon" className="text-primary">
-                                <Link to="/CuadrosSubastables/create">
-                                    <Plus className="h-4 w-4" />
-                                </Link>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Crear cuadro</TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </div>
+    const minimumRows = 4;
+    const emptyRows = Array.from({ length: Math.max(0, minimumRows - cuadros.length) });
 
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader className="bg-primary/50">
-                        <TableRow>
-                            {/* ()=>{} */}
-                            {/* ()=>() */}
-                            {cuadroColumns.map((col) => (
-                                <TableHead key={col.key} className="text-left font-semibold">
-                                    {col.label}
-                                </TableHead>
-                            ))}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {cuadros.map((cuadro) => (
-                            <TableRow key={cuadro.id}>
-                                <TableCell>
-                                    <div className="w-12 h-12 rounded overflow-hidden bg-muted flex items-center justify-center">
-                                        {cuadro.imagen?.datos ? (
-                                            <img
-                                                src={`${BASE_URL}/${cuadro.imagen.datos}`}
-                                                alt={cuadro.nombre}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <Film className="h-5 w-5 text-muted-foreground" />
-                                        )}
-                                    </div>
-                                </TableCell>
-                                <TableCell className="font-medium">{cuadro.nombre}</TableCell>
-                                <TableCell>
-                                    {Array.isArray(cuadro.categorias)
-                                        ? cuadro.categorias.join(", ")
-                                        : cuadro.categorias}
-                                </TableCell>
-                                <TableCell>{cuadro.estado_condicion}</TableCell>
-                                <TableCell>{cuadro.estado_cuadro}</TableCell>
-                                <TableCell>{cuadro.nombre_dueno}</TableCell>
-                                <TableCell className="flex justify-start items-center gap-1">
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Link to={`/CuadrosSubastables/${cuadro.id}`}>
-                                                    <Button variant="ghost" size="icon">
-                                                        <BookUser className="h-4 w-4 text-primary" />
-                                                    </Button>
-                                                </Link>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Detalle Cuadro</TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <Edit className="h-4 w-4 text-primary" />
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Actualizar</TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Eliminar</TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                </TableCell>
+    return (
+        <div
+            className="min-h-screen bg-[#171741] px-4 py-8"
+            style={{
+                backgroundImage: `linear-gradient(rgba(10, 18, 44, 0.28), rgba(10, 18, 44, 0.46)), url(${fondoTabla})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center top",
+                backgroundRepeat: "no-repeat",
+            }}
+        >
+            <div className="mx-auto max-w-345 py-6">
+                <div className="mb-7 flex items-start justify-between gap-4">
+                    <h1
+                        className="text-[1.8rem] leading-none text-[#F2E199] drop-shadow-[0_0_10px_rgba(242,225,153,0.95)] md:text-[2.3rem]"
+                        style={{ fontFamily: '"Great Vibes", cursive' }}
+                    >
+                        Listado de Cuadros Subastables
+                    </h1>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    size="icon"
+                                    className="size-9 border-[#ECB44D] bg-[#171741]/70 text-[#F2E199] shadow-[0_0_18px_rgba(236,180,77,0.18)] hover:bg-[#194174] hover:text-[#F2E199]"
+                                >
+                                    <Link to="/CuadrosSubastables/create">
+                                        <Plus className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Crear cuadro</TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
+
+                <div className="mx-auto mt-6 w-full overflow-hidden border border-[#d8a63b] bg-transparent shadow-[0_16px_60px_rgba(12,18,46,0.18)]">
+                    <Table className="table-fixed border-separate border-spacing-0">
+                        <TableHeader>
+                            <TableRow className="border-0 hover:bg-transparent">
+                                {cuadroColumns.map((col) => (
+                                    <TableHead
+                                        key={col.key}
+                                        className="h-9 border-r border-b border-[#d8a63b] bg-[#e3d38c] px-3 text-center text-sm font-bold uppercase tracking-wide text-[#d89c2a] last:border-r-0 md:h-11 md:text-[0.88rem]"
+                                    >
+                                        {col.label}
+                                    </TableHead>
+                                ))}
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {cuadros.map((cuadro) => (
+                                <TableRow key={cuadro.id} className="border-0 bg-[#1a1a5a]/94 hover:bg-[#202068]/96">
+                                    <TableCell className="h-12 border-r border-b border-[#b68f2f] px-3 py-1 md:h-14">
+                                        <div className="mx-auto flex h-12 w-10 items-center justify-center overflow-hidden rounded-lg border border-[#ECB44D]/35 bg-[#194174]/28 md:h-14 md:w-12">
+                                            {cuadro.imagen?.datos ? (
+                                                <img
+                                                    src={`${BASE_URL}/${cuadro.imagen.datos}`}
+                                                    alt={cuadro.nombre}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <Film className="h-4 w-4 text-[#F2E199]/70" />
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="h-12 border-r border-b border-[#b68f2f] px-3 py-1 text-center text-[0.62rem] font-semibold uppercase tracking-wide text-[#F2E199] md:h-14 md:text-[0.72rem]">
+                                        {cuadro.nombre}
+                                    </TableCell>
+                                    <TableCell className="h-12 border-r border-b border-[#b68f2f] px-3 py-1 text-center text-[0.62rem] text-[#F2E199] md:h-14 md:text-[0.72rem]">
+                                        {Array.isArray(cuadro.categorias)
+                                            ? cuadro.categorias.join(", ")
+                                            : cuadro.categorias}
+                                    </TableCell>
+                                    <TableCell className="h-12 border-r border-b border-[#b68f2f] px-3 py-1 text-center text-[0.62rem] text-[#F2E199] md:h-14 md:text-[0.72rem]">
+                                        {cuadro.estado_condicion}
+                                    </TableCell>
+                                    <TableCell className="h-12 border-r border-b border-[#b68f2f] px-3 py-1 text-center text-[0.62rem] text-[#F2E199] md:h-14 md:text-[0.72rem]">
+                                        {cuadro.estado_cuadro}
+                                    </TableCell>
+                                    <TableCell className="h-12 border-r border-b border-[#b68f2f] px-3 py-1 text-center text-[0.62rem] text-[#F2E199] md:h-14 md:text-[0.72rem]">
+                                        {cuadro.nombre_dueno}
+                                    </TableCell>
+                                    <TableCell className="h-12 border-b border-[#b68f2f] px-3 py-1 md:h-14">
+                                        <div className="flex items-center justify-center gap-1">
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Link to={`/CuadrosSubastables/${cuadro.id}`}>
+                                                            <Button variant="ghost" size="icon" className="size-8 text-[#F2E199] hover:bg-[#194174] hover:text-[#F2E199]">
+                                                                <BookUser className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        </Link>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>Detalle Cuadro</TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="size-8 text-[#6FB8E6] hover:bg-[#194174] hover:text-[#6FB8E6]">
+                                                            <Edit className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>Actualizar</TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="size-8 text-[#ECB44D] hover:bg-[#194174] hover:text-[#F2E199]">
+                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>Eliminar</TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            {emptyRows.map((_, index) => (
+                                <TableRow key={`empty-${index}`} className="border-0 bg-[#1a1a5a]/94 hover:bg-[#1a1a5a]/94">
+                                    <TableCell className="h-12 border-r border-b border-[#b68f2f] md:h-14" />
+                                    <TableCell className="h-12 border-r border-b border-[#b68f2f] md:h-14" />
+                                    <TableCell className="h-12 border-r border-b border-[#b68f2f] md:h-14" />
+                                    <TableCell className="h-12 border-r border-b border-[#b68f2f] md:h-14" />
+                                    <TableCell className="h-12 border-r border-b border-[#b68f2f] md:h-14" />
+                                    <TableCell className="h-12 border-r border-b border-[#b68f2f] md:h-14" />
+                                    <TableCell className="h-12 border-b border-[#b68f2f] md:h-14" />
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+                <Button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    className="mt-6 flex h-9 items-center gap-2 border border-[#ECB44D] bg-[#171741]/70 px-4 text-sm text-[#F2E199] hover:bg-[#194174] hover:text-[#F2E199]"
+                >
+                    <ArrowLeft className="w-4 h-4" />
+                    Regresar
+                </Button>
             </div>
-            <Button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="flex items-center gap-2 bg-accent text-white hover:bg-accent/90 mt-6"
-            >
-                <ArrowLeft className="w-4 h-4" />
-                Regresar
-            </Button>
         </div>
     );
 }
