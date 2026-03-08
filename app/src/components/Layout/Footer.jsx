@@ -35,7 +35,7 @@ export function Footer() {
         </div>
 
         <p className="text-xs" style={{ color: "#F2E199" }}>
-          {new Date().getFullYear()} Todos los derechos reservados
+          {new Date().getFullYear()} Proyecto Subasta
         </p>
       </div>
     </footer>
