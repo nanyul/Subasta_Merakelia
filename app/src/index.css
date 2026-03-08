@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Great+Vibes&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -156,4 +157,66 @@
 
   }
 
+}
+
+@keyframes merakelia-star-twinkle {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes merakelia-star-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-1.5%, 1%, 0);
+  }
+  100% {
+    transform: translate3d(1.5%, -1%, 0);
+  }
+}
+
+@layer components {
+  .hero-stars,
+  .hero-stars-soft {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-repeat: repeat;
+    mix-blend-mode: screen;
+  }
+
+  .hero-stars {
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(255, 245, 212, 1) 0 1.8px, rgba(255, 214, 102, 0.45) 3px, transparent 6px),
+      radial-gradient(circle at 22% 68%, rgba(242, 225, 153, 0.98) 0 2px, rgba(255, 214, 102, 0.38) 3.4px, transparent 6.4px),
+      radial-gradient(circle at 38% 32%, rgba(255, 245, 212, 1) 0 1.7px, rgba(255, 236, 171, 0.42) 3px, transparent 5.8px),
+      radial-gradient(circle at 54% 18%, rgba(236, 180, 77, 0.98) 0 2.4px, rgba(255, 214, 102, 0.4) 4px, transparent 7px),
+      radial-gradient(circle at 66% 58%, rgba(255, 236, 171, 0.94) 0 1.9px, rgba(255, 214, 102, 0.36) 3.1px, transparent 6px),
+      radial-gradient(circle at 78% 26%, rgba(242, 225, 153, 0.96) 0 2.2px, rgba(255, 214, 102, 0.4) 3.8px, transparent 6.8px),
+      radial-gradient(circle at 88% 72%, rgba(255, 245, 212, 0.92) 0 1.8px, rgba(255, 236, 171, 0.34) 3px, transparent 5.6px);
+    background-size: 280px 280px, 340px 340px, 260px 260px, 420px 420px, 300px 300px, 360px 360px, 280px 280px;
+    filter: saturate(1.15) brightness(1.08);
+    opacity: 0.96;
+    animation: merakelia-star-twinkle 6s ease-in-out infinite, merakelia-star-drift 22s ease-in-out infinite alternate;
+  }
+
+  .hero-stars-soft {
+    background-image:
+      radial-gradient(circle at 14% 40%, rgba(255, 219, 120, 0.38) 0 14px, transparent 48px),
+      radial-gradient(circle at 32% 16%, rgba(255, 236, 171, 0.34) 0 12px, transparent 42px),
+      radial-gradient(circle at 58% 28%, rgba(236, 180, 77, 0.42) 0 16px, transparent 54px),
+      radial-gradient(circle at 74% 14%, rgba(255, 219, 120, 0.28) 0 13px, transparent 44px),
+      radial-gradient(circle at 84% 48%, rgba(242, 225, 153, 0.26) 0 11px, transparent 38px);
+    filter: blur(0.2px) saturate(1.1);
+    opacity: 0.82;
+    animation: merakelia-star-drift 30s ease-in-out infinite alternate-reverse;
+  }
 }

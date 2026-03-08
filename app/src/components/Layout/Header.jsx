@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import {
   Layers,
   Film,
-  ChartArea,
   Filter,
   Wrench,
   LogIn,
@@ -13,9 +12,10 @@ import {
   Menu,
   X,
   ChevronDown,
-  Clapperboard,
   User,
-  ShoppingBasket
+  ShoppingBasket,
+  HandCoins,
+  Palette,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -35,17 +35,26 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const userEmail = "Invitado";
 
-const navItems = [
-  { title: "Películas", href: "/movie", icon: <Film className="h-4 w-4" /> },
-  {
-    title: "Filtrar Películas",
-    href: "/movie/filter",
-    icon: <Filter className="h-4 w-4" />,
-  },
-];
+  const subasItems = [
+    { title: "Subastas", href: "/subastas", icon: <Film className="h-4 w-4" /> },
+    {
+      title: "Filtrar Subastas",
+      href: "/subastas/filter",
+      icon: <Filter className="h-4 w-4" />,
+    },
+  ];
 
-const mantItems = [
- {
+  const cuadroItems = [
+    { title: "Cuadros Subastables", href: "/cuadros", icon: <Film className="h-4 w-4" /> },
+    {
+      title: "Filtrar Cuadros",
+      href: "/cuadros/filter",
+      icon: <Filter className="h-4 w-4" />,
+    },
+  ];
+
+  const mantItems = [
+    {
       title: "Usuarios",
       href: "/user",
       icon: <Wrench className="h-4 w-4" />,
@@ -54,57 +63,71 @@ const mantItems = [
       title: "Cuadros Subastables",
       href: "/CuadrosSubastables/galeria",
       icon: <ShoppingBasket className="h-4 w-4" />,
+    }
+  ];
+
+  const userItems = [
+    { title: "Login", href: "/user/login", icon: <LogIn className="h-4 w-4" /> },
+    {
+      title: "Registrarse",
+      href: "/user/create",
+      icon: <UserPlus className="h-4 w-4" />,
     },
     {
-      title: "Gráfico de Alquileres",
-      href: "/rental/graph",
-      icon: <ChartArea className="h-4 w-4" />,
+      title: "Logout",
+      href: "#login",
+      icon: <LogOut className="h-4 w-4" />,
     },
-];
-
-const userItems = [
-  { title: "Login", href: "/user/login", icon: <LogIn className="h-4 w-4" /> },
-  {
-    title: "Registrarse",
-    href: "/user/create",
-    icon: <UserPlus className="h-4 w-4" />,
-  },
-  {
-    title: "Logout",
-    href: "#login",
-    icon: <LogOut className="h-4 w-4" />,
-  },
-];
+  ];
   return (
-    <header className="w-full fixed top-0 left-0 z-50 backdrop-blur-xl bg-gradient-to-r from-primary/80 via-primary/60 to-primary/80 border-b border-white/10 shadow-lg">
-      <div className="flex items-center justify-between px-6 py-3 max-w-[1280px] mx-auto text-white">
+    <header className="w-full fixed top-0 left-0 z-50 backdrop-blur-xl bg-[#171741] border-b border-white/10 shadow-lg">
+      <div className="flex items-center justify-between px-6 py-3 max-w-[1280px] mx-auto" style={{ color: '#F2E199' }}>
 
         {/* -------- Logo -------- */}
-        <Link
-          to="/"
-          className="flex items-center gap-2 text-xl font-semibold tracking-wide hover:opacity-90 transition"
-        >
-          <Clapperboard className="h-6 w-6" />
-          <span className="hidden sm:inline">MoviesApp</span>
-        </Link>
+        <div>
+          <Link to="/" className="flex items-center gap-2 text-lg font-semibold">
+            <img src="/src/assets/logo.png" alt="Merakelia Logo" className="h-20 w-auto" style={{ maxWidth: '260px' }} />
+          </Link>
+        </div>
 
         {/* -------- Menú escritorio -------- */}
         <div className="hidden md:flex flex-1 justify-center">
           <Menubar className="w-auto bg-transparent border-none shadow-none space-x-6">
-            {/* Películas */}
+            
+            {/* Subastas */}
             <MenubarMenu>
-              <MenubarTrigger className="text-white font-medium flex items-center gap-1 hover:text-secondary transition">
-                <Film className="h-4 w-4" /> Películas
+              <MenubarTrigger className="font-medium flex items-center gap-1 hover:text-secondary transition" style={{ color: '#F2E199' }}>
+                <HandCoins className="h-4 w-4" /> Subastas
                 <ChevronDown className="h-3 w-3" />
               </MenubarTrigger>
               <MenubarContent className="bg-primary/0 backdrop-blur-md border-white/10">
-                {navItems.map((item) => (
+                {subasItems.map((item) => (
                   <MenubarItem key={item.href} asChild>
                     <Link
                       to={item.href}
                       className="flex items-center gap-2 py-2 px-3 rounded-md text-sm hover:bg-accent/10 transition"
-      >
-        
+                    >
+
+                      {item.icon} {item.title}
+                    </Link>
+                  </MenubarItem>
+                ))}
+              </MenubarContent>
+            </MenubarMenu>
+
+            {/* Cuadros */}
+            <MenubarMenu>
+              <MenubarTrigger className="font-medium flex items-center gap-1 hover:text-secondary transition" style={{ color: '#F2E199' }}>
+                <Palette className="h-4 w-4" /> Cuadros
+                <ChevronDown className="h-3 w-3" />
+              </MenubarTrigger>
+              <MenubarContent className="bg-primary/0 backdrop-blur-md border-white/10">
+                {cuadroItems.map((item) => (
+                  <MenubarItem key={item.href} asChild>
+                    <Link
+                      to={item.href}
+                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm hover:bg-accent/10 transition"
+                    >
                       {item.icon} {item.title}
                     </Link>
                   </MenubarItem>
@@ -114,18 +137,18 @@ const userItems = [
 
             {/* Mantenimientos */}
             <MenubarMenu>
-              <MenubarTrigger className="text-white font-medium flex items-center gap-1 hover:text-secondary transition">
+              <MenubarTrigger className="font-medium flex items-center gap-1 hover:text-secondary transition" style={{ color: '#F2E199' }}>
                 <Layers className="h-4 w-4" /> Mantenimientos
                 <ChevronDown className="h-3 w-3" />
               </MenubarTrigger>
               <MenubarContent className="bg-primary/0 backdrop-blur-md border-white/10">
                 {mantItems.map((item) => (
-                  <MenubarItem key={item.href} asChild> 
+                  <MenubarItem key={item.href} asChild>
                     <Link
                       to={item.href}
                       className="flex items-center gap-2 py-2 px-3 rounded-md text-sm hover:bg-accent/10 transition"
                     >
-                    {item.icon} {item.title}
+                      {item.icon} {item.title}
                     </Link>
                   </MenubarItem>
                 ))}
@@ -134,7 +157,7 @@ const userItems = [
 
             {/* Usuario */}
             <MenubarMenu>
-              <MenubarTrigger className="text-white font-medium flex items-center gap-1 hover:text-secondary transition">
+              <MenubarTrigger className="font-medium flex items-center gap-1 hover:text-secondary transition" style={{ color: '#F2E199' }}>
                 <User className="h-4 w-4" /> {userEmail}
                 <ChevronDown className="h-3 w-3" />
               </MenubarTrigger>
@@ -177,7 +200,7 @@ const userItems = [
               <nav className="mt-8 px-4 space-y-6">
                 <div>
                   <Link to="/" className="flex items-center gap-2 text-lg font-semibold">
-                    <Clapperboard /> MoviesApp
+                    <img src="/src/assets/logo.png" alt="Merakelia Logo" className="h-12 w-auto" style={{ maxWidth: '160px' }} />
                   </Link>
                 </div>
 
@@ -185,7 +208,7 @@ const userItems = [
                   <h4 className="mb-2 text-lg font-semibold flex items-center gap-2">
                     <Film /> Películas
                   </h4>
-                  {navItems.map((item) => (
+                  {subasItems.map((item) => (
                     <Link
                       key={item.href}
                       to={item.href}
