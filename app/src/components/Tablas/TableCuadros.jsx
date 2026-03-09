@@ -28,13 +28,13 @@ const BASE_URL = import.meta.env.VITE_BASE_URL + 'uploads';
 
 // Headers de la tabla
 const cuadroColumns = [
-    { key: "imagen", label: "Imagen" },
-    { key: "nombre", label: "Nombre" },
-    { key: "categorias", label: "Categorías" },
-    { key: "estado_condicion", label: "Condición" },
-    { key: "estado_cuadro", label: "Estado" },
-    { key: "nombre_dueno", label: "Dueño" },
-    { key: "actions", label: "Acciones" },
+    { key: "imagen", label: "Imagen", widthClass: "w-[10%]" },
+    { key: "nombre", label: "Nombre", widthClass: "w-[14%]" },
+    { key: "categorias", label: "Categorías", widthClass: "w-[26%]" },
+    { key: "estado_condicion", label: "Condición", widthClass: "w-[13%]" },
+    { key: "estado_cuadro", label: "Estado", widthClass: "w-[13%]" },
+    { key: "nombre_dueno", label: "Dueño", widthClass: "w-[14%]" },
+    { key: "actions", label: "Acciones", widthClass: "w-[10%]" },
 ];
 
 export default function TableCuadros() {
@@ -113,7 +113,7 @@ export default function TableCuadros() {
                                 {cuadroColumns.map((col) => (
                                     <TableHead
                                         key={col.key}
-                                        className="h-9 border-r border-b border-[#d8a63b] bg-[#e3d38c] px-3 text-center text-sm font-bold uppercase tracking-wide text-[#171741] last:border-r-0 md:h-11 md:text-[0.88rem]"
+                                        className={`${col.widthClass} h-9 border-r border-b border-[#d8a63b] bg-[#e3d38c] px-3 text-center text-sm font-bold uppercase tracking-wide text-[#171741] last:border-r-0 md:h-11 md:text-[0.88rem]`}
                                     >
                                         {col.label}
                                     </TableHead>
