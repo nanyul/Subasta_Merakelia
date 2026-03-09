@@ -55,6 +55,11 @@ export default function TableSubastas() {
         return `$ ${Number(price).toFixed(2)}`;
     };
 
+    const formatDate = (date) => {
+        if (!date) return "—";
+        return new Date(date).toLocaleString("es-ES").replace(", ", " ");
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -223,11 +228,11 @@ export default function TableSubastas() {
 
                                     <TableCell className="border-r border-b border-[#b68f2f] text-center text-[#F2E199]">
 
-                                        {subasta.fecha_inicio ?? "—"}
+                                        {formatDate(subasta.fecha_inicio)}
                                     </TableCell>
 
                                     <TableCell className="border-r border-b border-[#b68f2f] text-center text-[#F2E199]">
-                                        {subasta.fecha_fin}
+                                        {formatDate(subasta.fecha_fin)}
                                     </TableCell>
 
                                     <TableCell className="border-r border-b border-[#b68f2f] text-center text-[#F2E199]">
