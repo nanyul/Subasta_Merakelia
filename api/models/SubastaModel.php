@@ -14,11 +14,6 @@ class SubastaModel
     // Retorna un array con dos claves: 'activas' y 'finalizadas'
     public function all()
     {
-        // return [
-        //     'activas'     => $this->getActivas(),
-        //     'finalizadas' => $this->getFinalizadas()
-        // ];
-
         $activas = $this->getActivas();
         $finalizadas = $this->getFinalizadas();
 
@@ -74,6 +69,7 @@ class SubastaModel
                     s.id,
                     s.id_cuadro,
                     s.id_estado_subasta,
+                    s.fecha_inicio,
                     s.fecha_fin,
                     s.precio_base,
                     s.incremento_minimo
