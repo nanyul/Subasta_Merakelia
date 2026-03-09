@@ -106,7 +106,7 @@ export default function TableCuadros() {
                     </TooltipProvider>
                 </div>
 
-                <div className="mx-auto mt-6 w-full overflow-hidden border border-[#d8a63b] bg-transparent shadow-[0_16px_60px_rgba(12,18,46,0.18)]">
+                <div className="mx-auto mt-6 w-full overflow-hidden rounded-lg border border-[#d8a63b] bg-transparent shadow-[0_16px_60px_rgba(12,18,46,0.18)]">
                     <Table className="table-fixed border-separate border-spacing-0">
                         <TableHeader>
                             <TableRow className="border-0 hover:bg-transparent">
