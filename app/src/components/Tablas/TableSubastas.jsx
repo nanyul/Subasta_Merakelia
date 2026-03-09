@@ -154,8 +154,8 @@ export default function TableSubastas() {
                         <Badge
                             className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
                                 ${filtro === "canceladas"
-                                    ? "bg-red-500 text-white border-red-500"
-                                    : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-red-500/20 hover:border-red-500"
+                                    ? "bg-[#ECB44D] text-[#171741] border-[#ECB44D]" 
+                                    : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#ECB44D]/20 hover:border-[#ECB44D]"
                                 }`}
                             onClick={() => setFiltro("canceladas")}
                         >
