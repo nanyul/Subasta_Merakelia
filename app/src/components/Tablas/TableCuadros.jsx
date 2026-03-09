@@ -113,7 +113,7 @@ export default function TableCuadros() {
                                 {cuadroColumns.map((col) => (
                                     <TableHead
                                         key={col.key}
-                                        className="h-9 border-r border-b border-[#d8a63b] bg-[#e3d38c] px-3 text-center text-sm font-bold uppercase tracking-wide text-[#d89c2a] last:border-r-0 md:h-11 md:text-[0.88rem]"
+                                        className="h-9 border-r border-b border-[#d8a63b] bg-[#e3d38c] px-3 text-center text-sm font-bold uppercase tracking-wide text-[#171741] last:border-r-0 md:h-11 md:text-[0.88rem]"
                                     >
                                         {col.label}
                                     </TableHead>

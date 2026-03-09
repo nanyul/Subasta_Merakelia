@@ -18,6 +18,7 @@ import {
     ImageIcon,
     ArrowLeft,
     Palette,
+    CircleDollarSign,
     CalendarDays,
     ShieldCheck,
     Tag,
@@ -32,11 +33,40 @@ import fondoTabla from "@/assets/fondoTabla.png";
 //Services
 import CuadrosService from '../../services/CuadrosService';
 
+function formatearColones(valorEnColones) {
+    const monto = Number(valorEnColones);
+
+    if (Number.isNaN(monto)) {
+        return 'Sin registrar';
+    }
+
+    return new Intl.NumberFormat('es-CR', {
+        style: 'currency',
+        currency: 'CRC',
+        minimumFractionDigits: 2,
+    }).format(monto);
+}
+
+function formatearDolares(valorEnDolares) {
+    const monto = Number(valorEnDolares);
+
+    if (Number.isNaN(monto)) {
+        return 'Sin registrar';
+    }
+
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+    }).format(monto);
+}
+
 export function DetailCuadro() {
     const navigate = useNavigate();
     const { id } = useParams();
     const BASE_URL = import.meta.env.VITE_BASE_URL + 'uploads';
     const [cuadro, setData] = useState(null);
+    const [indiceImagenActual, setIndiceImagenActual] = useState(0);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     useEffect(() => {
@@ -56,16 +86,33 @@ export function DetailCuadro() {
         fetchData();
     }, [id]);
 
+    const item = Array.isArray(cuadro?.data) ? cuadro.data[0] : cuadro?.data;
+    const imagenesGaleria = item?.imagenes && item.imagenes.length > 0
+        ? item.imagenes.filter((imagen) => imagen?.datos)
+        : (item?.imagen?.datos ? [item.imagen] : []);
+
+    useEffect(() => {
+        setIndiceImagenActual(0);
+    }, [id, imagenesGaleria.length]);
+
+    useEffect(() => {
+        if (imagenesGaleria.length <= 1) {
+            return undefined;
+        }
+
+        const intervaloId = window.setInterval(() => {
+            setIndiceImagenActual((indicePrevio) => (indicePrevio + 1) % imagenesGaleria.length);
+        }, 5000);
+
+        return () => window.clearInterval(intervaloId);
+    }, [imagenesGaleria.length]);
+
     if (loading) return <LoadingGrid count={1} type="grid" />;
     if (error) return <ErrorAlert title="Error al cargar cuadros" message={error} />;
     if (!cuadro || !cuadro.data || (Array.isArray(cuadro.data) && cuadro.data.length === 0))
         return <EmptyState message="No se encontró el cuadro solicitado." />;
 
     // El backend retorna un array, tomamos el primer elemento
-    const item = Array.isArray(cuadro.data) ? cuadro.data[0] : cuadro.data;
-    const galleryImages = item.imagenes && item.imagenes.length > 0
-        ? item.imagenes
-        : (item.imagen?.datos ? [item.imagen] : []);
     const detailCards = [
         {
             label: 'Artista',
@@ -90,6 +137,19 @@ export function DetailCuadro() {
             value: item.fecha_registro || 'Sin registrar',
             icon: CalendarDays,
             accent: '#6FB8E6',
+        },
+        {
+            label: 'Valor estimado',
+            value: item.valor_estimado && item.valor_estimado_colones ? (
+                <span className="flex flex-col gap-0.5">
+                    <span>{formatearDolares(item.valor_estimado)}</span>
+                    <span className="text-[0.68rem] font-medium text-[#6FB8E6] md:text-[0.72rem]">
+                        {formatearColones(item.valor_estimado_colones)}
+                    </span>
+                </span>
+            ) : 'Sin registrar',
+            icon: CircleDollarSign,
+            accent: '#ECB44D',
         },
         {
             label: 'Propietario',
@@ -144,18 +204,42 @@ export function DetailCuadro() {
                             <CardContent className="p-3.5">
                                 <div className="relative overflow-hidden rounded-[1.05rem] border border-[#ECB44D]/45 bg-[#194174]/38">
                                     <div className="absolute inset-0 bg-linear-to-b from-[#6FB8E6]/10 via-transparent to-[#171741]/24" />
-                                    <div className="relative aspect-4/5 w-full flex items-center justify-center">
-                                        {item.imagen?.datos ? (
-                                            <img
-                                                src={`${BASE_URL}/${item.imagen.datos}`}
-                                                alt={`Obra artística ${item.nombre}`}
-                                                className="h-full w-full object-cover"
-                                            />
+                                    <div className="relative aspect-4/5 w-full overflow-hidden">
+                                        {imagenesGaleria.length > 0 ? (
+                                            <div
+                                                className="flex h-full transition-transform duration-700 ease-in-out"
+                                                style={{ transform: `translateX(-${indiceImagenActual * 100}%)` }}
+                                            >
+                                                {imagenesGaleria.map((imagen, index) => (
+                                                    <div key={imagen.id ?? index} className="h-full w-full shrink-0">
+                                                        <img
+                                                            src={`${BASE_URL}/${imagen.datos}`}
+                                                            alt={`Obra artística ${item.nombre} ${index + 1}`}
+                                                            className="h-full w-full object-cover"
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
                                         ) : (
                                             <div className="flex h-full w-full items-center justify-center text-[#F2E199]/70">
                                                 <ImageIcon className="h-12 w-12" />
                                             </div>
                                         )}
+
+                                        {imagenesGaleria.length > 1 && (
+                                            <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-[#ECB44D]/35 bg-[#171741]/65 px-2.5 py-1 backdrop-blur-sm">
+                                                {imagenesGaleria.map((imagen, index) => (
+                                                    <button
+                                                        key={imagen.id ?? `dot-${index}`}
+                                                        type="button"
+                                                        onClick={() => setIndiceImagenActual(index)}
+                                                        className={`h-2.5 w-2.5 rounded-full transition ${index === indiceImagenActual ? 'bg-[#F2E199] shadow-[0_0_10px_rgba(242,225,153,0.8)]' : 'bg-[#6FB8E6]/45 hover:bg-[#6FB8E6]/70'}`}
+                                                        aria-label={`Ver imagen ${index + 1}`}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+
                                         <Badge className="absolute right-2.5 top-2.5 border border-[#ECB44D]/70 bg-[#194174]/88 px-2.5 py-1 text-[0.68rem] font-bold text-[#F2E199] shadow-[0_0_14px_rgba(111,184,230,0.16)] backdrop-blur-sm">
                                             {item.estado_cuadro}
                                         </Badge>
@@ -164,7 +248,7 @@ export function DetailCuadro() {
                             </CardContent>
                         </Card>
 
-                        {galleryImages.length > 1 && (
+                        {imagenesGaleria.length > 1 && (
                             <Card className="border-[#ECB44D]/50 bg-[#171741]/68 shadow-[0_20px_60px_rgba(12,18,46,0.36)] backdrop-blur-md">
                                 <CardContent className="p-3.5">
                                     <div className="mb-2.5 inline-flex items-center gap-2 rounded-full border border-[#6FB8E6]/35 bg-[#194174]/55 px-2.5 py-1 text-[#F2E199]">
@@ -172,11 +256,11 @@ export function DetailCuadro() {
                                         <span className="text-[0.62rem] uppercase tracking-[0.22em]">Galeria</span>
                                     </div>
                                     <div className="grid grid-cols-3 gap-1.5">
-                                        {galleryImages.map((img, index) => (
-                                            <div key={img.id ?? index} className="overflow-hidden rounded-lg border border-[#ECB44D]/35 bg-[#194174]/32">
+                                        {imagenesGaleria.map((imagen, index) => (
+                                            <div key={imagen.id ?? index} className="overflow-hidden rounded-lg border border-[#ECB44D]/35 bg-[#194174]/32">
                                                 <div className="aspect-square">
                                                     <img
-                                                        src={`${BASE_URL}/${img.datos}`}
+                                                        src={`${BASE_URL}/${imagen.datos}`}
                                                         alt={`${item.nombre} ${index + 1}`}
                                                         className="h-full w-full object-cover"
                                                     />
@@ -264,10 +348,10 @@ export function DetailCuadro() {
                                         <Table className="table-fixed">
                                             <TableHeader>
                                                 <TableRow className="border-0 hover:bg-transparent">
-                                                    <TableHead className="h-7 border-r border-b border-[#b68f2f] bg-[#e3d38c] px-1.5 text-center text-[0.56rem] font-bold uppercase tracking-wide text-[#d89c2a]">ID</TableHead>
-                                                    <TableHead className="h-7 border-r border-b border-[#b68f2f] bg-[#e3d38c] px-1.5 text-center text-[0.56rem] font-bold uppercase tracking-wide text-[#d89c2a]">Inicio</TableHead>
-                                                    <TableHead className="h-7 border-r border-b border-[#b68f2f] bg-[#e3d38c] px-1.5 text-center text-[0.56rem] font-bold uppercase tracking-wide text-[#d89c2a]">Cierre</TableHead>
-                                                    <TableHead className="h-7 border-b border-[#b68f2f] bg-[#e3d38c] px-1.5 text-center text-[0.56rem] font-bold uppercase tracking-wide text-[#d89c2a]">Estado</TableHead>
+                                                    <TableHead className="h-7 border-r border-b border-[#b68f2f] bg-[#e3d38c] px-1.5 text-center text-[0.56rem] font-bold uppercase tracking-wide text-[#171741]">ID</TableHead>
+                                                    <TableHead className="h-7 border-r border-b border-[#b68f2f] bg-[#e3d38c] px-1.5 text-center text-[0.56rem] font-bold uppercase tracking-wide text-[#171741]">Inicio</TableHead>
+                                                    <TableHead className="h-7 border-r border-b border-[#b68f2f] bg-[#e3d38c] px-1.5 text-center text-[0.56rem] font-bold uppercase tracking-wide text-[#171741]">Cierre</TableHead>
+                                                    <TableHead className="h-7 border-b border-[#b68f2f] bg-[#e3d38c] px-1.5 text-center text-[0.56rem] font-bold uppercase tracking-wide text-[#171741]">Estado</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
