@@ -9,24 +9,19 @@ class CategoriasModel
     }
     public function all()
     {
-        //Consulta sql
+        
         $vSql = "SELECT * FROM categoria;";
 
-        //Ejecutar la consulta
         $vResultado = $this->enlace->ExecuteSQL($vSql);
 
-        // Retornar el objeto
         return $vResultado;
     }
 
     public function get($id)
     {
-        //Consulta sql
         $vSql = "SELECT * FROM categoria where id=$id";
 
-        //Ejecutar la consulta
         $vResultado = $this->enlace->ExecuteSQL($vSql);
-        // Retornar el objeto
         return $vResultado[0];
     }
     public function getByCuadro($id_cuadro)
