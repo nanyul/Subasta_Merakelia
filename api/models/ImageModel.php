@@ -21,7 +21,9 @@ class ImageModel
         $vSql = "SELECT i.id, i.datos, i.fecha_registro
                 FROM imagen i
                 JOIN cuadro_imagen c ON c.id_cuadro = $idCuadro
-                WHERE i.id = c.id_imagen;";
+            WHERE i.id = c.id_imagen
+            ORDER BY c.id_imagen ASC
+            LIMIT 1;";
 
         //Ejecutar la consulta
         $vResultado = $this->enlace->ExecuteSQL($vSql);
@@ -39,7 +41,8 @@ class ImageModel
         $vSql = "SELECT i.id, i.datos, i.fecha_registro
                 FROM imagen i
                 JOIN cuadro_imagen c ON c.id_cuadro = $idCuadro
-                WHERE i.id = c.id_imagen;";
+                WHERE i.id = c.id_imagen
+                ORDER BY c.id_imagen ASC;";
 
         $vResultado = $this->enlace->ExecuteSQL($vSql);
         return !empty($vResultado) ? $vResultado : [];

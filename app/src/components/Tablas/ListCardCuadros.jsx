@@ -48,11 +48,11 @@ export function ListCardCuadros({ data }) {
                                 <ImageIcon className="h-16 w-16" />
                             </div>
                         )}
-                        {item.valor_estimado && (
+                        {item.estado_cuadro && (
                             <Badge
                                 className="absolute right-2.5 top-2.5 border border-[#ECB44D]/70 bg-[#ECB44D] px-2.5 py-1 text-[0.68rem] font-bold text-[#171741] shadow-[0_0_16px_rgba(236,180,77,0.24)] md:text-xs"
                             >
-                                ₡{parseFloat(item.valor_estimado).toFixed(2)}
+                                {item.estado_cuadro}
                             </Badge>
                         )}
                         </div>
@@ -70,11 +70,6 @@ export function ListCardCuadros({ data }) {
                                 <Tag className="h-3.5 w-3.5 shrink-0 text-[#ECB44D]" />
                                 {item.estado_cuadro}
                             </span>
-                        </div>
-                        {/* Artista */}
-                        <div className="flex items-center gap-2 text-xs text-[#F2E199]/84 md:text-sm">
-                            <User className="h-3.5 w-3.5 shrink-0 text-[#6FB8E6]" />
-                            <span>{item.nombre_artista}</span>
                         </div>
                         {/* Categorías */}
                         <div className="flex items-start gap-2 text-xs text-[#F2E199]/84 md:text-sm">

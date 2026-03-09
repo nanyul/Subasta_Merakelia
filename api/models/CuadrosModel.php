@@ -10,7 +10,8 @@ class CuadrosModel
     public function all()
     {
         //Consulta sql
-        $vSql = "SELECT c.id, c.nombre, c.nombre_artista,
+        $vSql = "SELECT c.id, c.nombre, c.nombre_artista, c.valor_estimado,
+        ROUND(c.valor_estimado * 510, 2) AS valor_estimado_colones,
         CASE c.id_estado_cuadro
             WHEN 1 THEN 'Publicado'
             WHEN 2 THEN 'Reservado'
@@ -31,10 +32,7 @@ class CuadrosModel
                     $categorias = $categoriaM->getByCuadro($cuadro->id); // Usar id del cuadro
                     // Convertir array de categorías a array de descripciones
                     $cuadro->categorias = array_column($categorias ?: [], 'descripcion');
-
                     $cuadro->imagen = $imageM->getImageCuadro($cuadro->id);
-                        //para obtener la imagen en posición [0] (primera) del array resultado de getImageCuadro
-                        $cuadro->imagen = $imageM->getImageCuadro($cuadro->id);
                 }
             }
         }
@@ -45,7 +43,8 @@ class CuadrosModel
     public function get($id)
     {
         //Consulta sql
-        $vSql = "SELECT c.id, c.nombre, c.descripcion, c.nombre_artista, c.fecha_registro,
+        $vSql = "SELECT c.id, c.nombre, c.descripcion, c.nombre_artista, c.fecha_registro, c.valor_estimado,
+        ROUND(c.valor_estimado * 510, 2) AS valor_estimado_colones,
         CASE c.id_estado_cuadro
             WHEN 1 THEN 'Publicado'
             WHEN 2 THEN 'Reservado'
