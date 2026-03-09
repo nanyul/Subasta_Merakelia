@@ -9,15 +9,15 @@ class ImageModel
     {
         $this->enlace = new MySqlConnect();
     }
-    //Subir imagen de una pelicula registrada
+    
     public function uploadFile($object)
     {
         return false;
     }
-    //Obtener una imagen de una pelicula
+    
     public function getImageCuadro($idCuadro)
     {
-        //Consulta sql
+        
         $vSql = "SELECT i.id, i.datos, i.fecha_registro
                 FROM imagen i
                 JOIN cuadro_imagen c ON c.id_cuadro = $idCuadro
@@ -25,7 +25,7 @@ class ImageModel
             ORDER BY c.id_imagen ASC
             LIMIT 1;";
 
-        //Ejecutar la consulta
+        
         $vResultado = $this->enlace->ExecuteSQL($vSql);
         if (!empty($vResultado)) {
             // Retornar el objeto en posición [0]
@@ -34,7 +34,7 @@ class ImageModel
         return $vResultado;
     }
 
-    //Obtener todas las imágenes de un cuadro
+   
     public function getAllImagesCuadro($idCuadro)
     {
         $idCuadro = intval($idCuadro);
