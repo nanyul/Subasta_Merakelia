@@ -1,24 +1,13 @@
 import axios from 'axios';
-const BASE_URL = import.meta.env.VITE_BASE_URL + 'user';
-
+const BASE_URL = import.meta.env.VITE_BASE_URL + 'User'; //URL controller
+//http://localhost:81/appmovie/api/ + User
 class UserService {
   getUsers() {
-    return axios.get(BASE_URL);
+    return axios.get(BASE_URL); //index
   }
+
   getUserById(UserId) {
-    return axios.get(BASE_URL + '/' + UserId);
-  }
-  getAllCustomer() {
-    return axios.get(BASE_URL + '/allCustomer/');
-  }
-  getCustomerbyShopRental(ShopRentalId) {
-    return axios.get(BASE_URL + '/customerbyShopRental/'+ ShopRentalId);
-  }
-  createUser(User) {
-    return axios.post(BASE_URL, JSON.stringify(User));
-  }
-  loginUser(User) {
-    return axios.post(BASE_URL + '/login/', JSON.stringify(User));
+    return axios.get(BASE_URL + '/' + UserId); //Get by ID
   }
 }
 

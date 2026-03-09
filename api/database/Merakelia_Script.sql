@@ -16,7 +16,7 @@ CREATE TABLE usuario (
     nombre VARCHAR(255) NOT NULL,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     id_rol INT NOT NULL,
-    activo BIT NOT NULL DEFAULT 1,
+    estado BIT NOT NULL DEFAULT 1,
     FOREIGN KEY (id_rol) REFERENCES rol(id)
 );
 

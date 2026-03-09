@@ -12,7 +12,8 @@ class UserModel
 	public function all()
 	{
 		//Consulta sql
-		$vSql = "SELECT u.nombre, u.correo, u.id_rol
+		$vSql = "SELECT u.nombre, u.correo, u.id_rol, u.id,
+			IF(u.estado = 1, 'Activo', 'Inactivo') AS estado
 				FROM usuario u;";
 		//Ejecutar la consulta
 		//vResultado es un array de objetos = JSON
@@ -22,7 +23,7 @@ class UserModel
 				$rolM = new RolModel(); //Crear Modelo Rol
 				foreach ($vResultado as $user) {
 					$rol = $rolM->get($user->id_rol);
-					$user->rol = $rol;
+					$user->rol = $rol->descripcion; //Agregar el nombre del rol al objeto usuario
 				}
 			}
 		}
@@ -34,17 +35,53 @@ class UserModel
 	{
 		$rolM = new RolModel();
 		//Consulta sql
-		$vSql = "SELECT * FROM user where id=$id";
+		$vSql = "SELECT u.id, u.nombre, u.correo, u.id_rol, u.fecha_registro,
+			IF(u.estado = 1, 'Activo', 'Inactivo') 
+			AS estado
+			FROM usuario u 
+			WHERE u.id=$id";
 		//Ejecutar la consulta
 		$vResultado = $this->enlace->ExecuteSQL($vSql);
 		if ($vResultado) {
-			$vResultado = $vResultado[0];
+			$vNResultado = $vResultado[0];
 			$rol = $rolM->getRolUser($id);
-			$vResultado->rol = $rol;
+			$vNResultado->rol = $rol->descripcion;
+
+			if ($vNResultado->id_rol == 2) {
+				$vNResultado->cantidad_subastas = $this->CantidadSubastas($id);
+			} elseif ($vNResultado->id_rol == 1) {
+				$vNResultado->cantidad_pujas = $this->CantidadPujas($id);
+			}
 			// Retornar el objeto
-			return $vResultado;
+			return $vNResultado;
 		} else {
 			return null;
+		}
+	}
+
+	public function CantidadSubastas($idUser)
+	{
+		//Consulta sql
+		$vSql = "SELECT COUNT(*) AS cantidad FROM subasta WHERE id_usuario=$idUser";
+		//Ejecutar la consulta
+		$vResultado = $this->enlace->ExecuteSQL($vSql);
+		if ($vResultado) {
+			return $vResultado[0]->cantidad;
+		} else {
+			return 0;
+		}
+	}
+
+	public function CantidadPujas($idUser)
+	{
+		//Consulta sql
+		$vSql = "SELECT COUNT(*) AS cantidad FROM puja WHERE id_usuario=$idUser";
+		//Ejecutar la consulta
+		$vResultado = $this->enlace->ExecuteSQL($vSql);
+		if ($vResultado) {
+			return $vResultado[0]->cantidad;
+		} else {
+			return 0;
 		}
 	}
 }
