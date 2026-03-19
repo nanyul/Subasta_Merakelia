@@ -10,6 +10,14 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 import {
     Tooltip,
@@ -18,9 +26,10 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { Eye, ArrowLeft, ImageIcon, Gavel } from "lucide-react";
+import { Eye, ArrowLeft, ImageIcon, Gavel, Plus, Pencil, Send, Ban } from "lucide-react";
 
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 import { LoadingGrid } from "../ui/custom/LoadingGrid";
 import { ErrorAlert } from "../ui/custom/ErrorAlert";
@@ -50,6 +59,9 @@ export default function TableSubastas() {
     const [filtro, setFiltro] = useState("todas");
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [actionLoadingId, setActionLoadingId] = useState(null);
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+    const [subastaToCancel, setSubastaToCancel] = useState(null);
 
     const formatPrice = (price) => {
         return `$ ${Number(price).toFixed(2)}`;
@@ -60,28 +72,80 @@ export default function TableSubastas() {
         return new Date(date).toLocaleString("es-ES").replace(", ", " ");
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await SubastaService.getAllSubastas();
-                const result = response.data;
+    const fetchSubastas = async () => {
+        try {
+            setLoading(true);
+            const response = await SubastaService.getAllSubastas();
+            const result = response.data;
 
-                if (result.success) {
-                    setSubastas(result.data || []);
-                } else {
-                    setError(result.message || "Error desconocido");
-                }
-            } catch (err) {
-                setError(err.message || "Error al conectar con el servidor");
-            } finally {
-                setLoading(false);
+            if (result.success) {
+                setSubastas(result.data || []);
+                setError(null);
+            } else {
+                setError(result.message || "Error desconocido");
             }
-        };
+        } catch (err) {
+            setError(err.message || "Error al conectar con el servidor");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        fetchData();
+    useEffect(() => {
+        fetchSubastas();
     }, []);
 
+    const handlePublish = async (id) => {
+        try {
+            setActionLoadingId(id);
+            const response = await SubastaService.publishSubasta(id);
+            const result = response.data;
+
+            if (result.success) {
+                toast.success(result.message || "Subasta publicada correctamente.");
+                await fetchSubastas();
+                return;
+            }
+
+            toast.error(result.message || "No fue posible publicar la subasta.");
+        } catch (err) {
+            toast.error(err.message || "Error al publicar la subasta.");
+        } finally {
+            setActionLoadingId(null);
+        }
+    };
+
+    const openCancelDialog = (subasta) => {
+        setSubastaToCancel(subasta);
+        setCancelDialogOpen(true);
+    };
+
+    const handleCancel = async () => {
+        if (!subastaToCancel?.id) return;
+
+        try {
+            setActionLoadingId(subastaToCancel.id);
+            const response = await SubastaService.cancelSubasta(subastaToCancel.id);
+            const result = response.data;
+
+            if (result.success) {
+                toast.success(result.message || "Subasta cancelada correctamente.");
+                setCancelDialogOpen(false);
+                setSubastaToCancel(null);
+                await fetchSubastas();
+                return;
+            }
+
+            toast.error(result.message || "No fue posible cancelar la subasta.");
+        } catch (err) {
+            toast.error(err.message || "Error al cancelar la subasta.");
+        } finally {
+            setActionLoadingId(null);
+        }
+    };
+
     const subastasFiltradas = subastas.filter((s) => {
+        if (filtro === "borradores") return s.estado === "Programada";
         if (filtro === "activas") return !s.estado || s.estado === "Activa";
         if (filtro === "finalizadas") return s.estado === "Finalizada";
         if (filtro === "canceladas") return s.estado === "Cancelada";
@@ -90,8 +154,6 @@ export default function TableSubastas() {
 
     if (loading) return <LoadingGrid type="grid" />;
     if (error) return <ErrorAlert title="Error al cargar subastas" message={error} />;
-    if (subastasFiltradas.length === 0)
-        return <EmptyState message="No hay subastas disponibles." />;
 
     return (
         <div
@@ -106,7 +168,7 @@ export default function TableSubastas() {
             <div className="mx-auto max-w-[1200px] py-6">
 
                 {/* TITULO */}
-                <div className="mb-7 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
 
                     <h1
                         className="text-[1.8rem] text-[#F2E199] drop-shadow-[0_0_10px_rgba(242,225,153,0.95)] md:text-[2.3rem]"
@@ -114,6 +176,8 @@ export default function TableSubastas() {
                     >
                         Listado de Subastas
                     </h1>
+
+                    <div className="flex flex-wrap items-center justify-end gap-2">
 
                     {/* FILTROS */}
                     <div className="inline-flex items-center gap-2 rounded-full border border-[#6FB8E6]/40 bg-[#194174]/55 px-3 py-1.5 text-[#F2E199]">
@@ -127,6 +191,17 @@ export default function TableSubastas() {
                             onClick={() => setFiltro("todas")}
                         >
                             Todas
+                        </Badge>
+
+                        <Badge
+                            className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
+                                ${filtro === "borradores"
+                                    ? "bg-[#F2E199] text-[#171741] border-[#F2E199]"
+                                    : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#F2E199]/20 hover:border-[#F2E199]"
+                                }`}
+                            onClick={() => setFiltro("borradores")}
+                        >
+                            Borradores
                         </Badge>
 
                         <Badge
@@ -163,13 +238,37 @@ export default function TableSubastas() {
                         </Badge>
                     </div>
 
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    size="icon"
+                                    className="size-9 border-[#ECB44D] bg-[#171741]/70 text-[#F2E199] shadow-[0_0_18px_rgba(236,180,77,0.18)] hover:bg-[#194174] hover:text-[#F2E199]"
+                                >
+                                    <Link to="/subasta/create">
+                                        <Plus className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Crear subasta</TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    </div>
+
                 </div>
 
                 {/* TABLA */}
 
-                <div className="mx-auto mt-6 w-full max-w-6xl overflow-hidden rounded-lg border border-[#d8a63b] bg-transparent shadow-[0_16px_60px_rgba(12,18,46,0.18)]">
+                {subastasFiltradas.length === 0 ? (
+                    <div className="mt-6">
+                        <EmptyState message="No hay subastas disponibles para este filtro." />
+                    </div>
+                ) : (
+                    <div className="mx-auto mt-6 w-full max-w-6xl overflow-hidden rounded-lg border border-[#d8a63b] bg-transparent shadow-[0_16px_60px_rgba(12,18,46,0.18)]">
 
-                    <Table className="min-w-[1000px]"> {/* Agrega un ancho mínimo para evitar que la tabla se colapse demasiado en pantallas pequeñas*/}
+                        <Table className="min-w-[1000px]"> {/* Agrega un ancho mínimo para evitar que la tabla se colapse demasiado en pantallas pequeñas*/}
 
                         <TableHeader>
 
@@ -220,8 +319,8 @@ export default function TableSubastas() {
 
                                     </TableCell>
 
-                                    <TableCell className="border-r border-b border-[#b68f2f] px-3 py-2 text[#F2E199] text-center text-[#F2E199] w-[200px]">
-                                        <div className="whitespace-normal break-works leading-tight">
+                                    <TableCell className="border-r border-b border-[#b68f2f] px-3 py-2 text-center text-[#F2E199] w-[200px]">
+                                        <div className="whitespace-normal break-words leading-tight">
                                             {subasta.objeto}
                                         </div>
                                     </TableCell>
@@ -237,7 +336,7 @@ export default function TableSubastas() {
 
                                     <TableCell className="border-r border-b border-[#b68f2f] text-center text-[#F2E199]">
                                         {formatPrice(subasta.precio_base)}
-                                    </TableCell>
+                                    </TableCell> 
 
                                     <TableCell className="border-r border-b border-[#b68f2f] text-center text-[#F2E199]">
                                         {subasta.cantidad_pujas}
@@ -248,6 +347,12 @@ export default function TableSubastas() {
                                         {(!subasta.estado || subasta.estado === "Activa") && (
                                             <span className="text-[#6FB8E6]">
                                                 Activa
+                                            </span>
+                                        )}
+
+                                        {subasta.estado === "Programada" && (
+                                            <span className="text-[#F2E199]">
+                                                Programada
                                             </span>
                                         )}
 
@@ -273,6 +378,63 @@ export default function TableSubastas() {
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
+                                                        <Link to={`/subasta/edit/${subasta.id}`}>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="size-8 text-[#F2E199] hover:bg-[#194174]"
+                                                            >
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Button>
+                                                        </Link>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>Editar subasta</TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+
+                                            {subasta.estado === "Programada" && (
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                disabled={actionLoadingId === subasta.id}
+                                                                onClick={() => handlePublish(subasta.id)}
+                                                                className="size-8 text-[#6FB8E6] hover:bg-[#194174] disabled:opacity-50"
+                                                            >
+                                                                <Send className="h-4 w-4" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>Publicar subasta</TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            )}
+
+                                            {subasta.estado !== "Cancelada" && subasta.estado !== "Finalizada" && (
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                disabled={actionLoadingId === subasta.id}
+                                                                onClick={() => openCancelDialog(subasta)}
+                                                                className="size-8 text-[#F2E199] hover:bg-[#194174] disabled:opacity-50"
+                                                            >
+                                                                <Ban className="h-4 w-4" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>Cancelar subasta</TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            )}
+
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
                                                         <Link to={`/subasta/${subasta.id}`}>
                                                             <Button
                                                                 variant="ghost"
@@ -287,7 +449,7 @@ export default function TableSubastas() {
                                                 </Tooltip>
                                             </TooltipProvider>
 
-                                            {subasta.estado !== "Cancelada" && (
+                                            {subasta.estado !== "Cancelada" && subasta.estado !== "Programada" && (
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
@@ -315,9 +477,10 @@ export default function TableSubastas() {
                             ))}
                         </TableBody>
 
-                    </Table>
+                        </Table>
 
-                </div>
+                    </div>
+                )}
 
                 {/* BOTON REGRESAR */}
                 <Button
@@ -328,6 +491,46 @@ export default function TableSubastas() {
                     <ArrowLeft className="w-4 h-4" />
                     Regresar
                 </Button>
+
+                <Dialog
+                    open={cancelDialogOpen}
+                    onOpenChange={(open) => {
+                        setCancelDialogOpen(open);
+                        if (!open && actionLoadingId === null) {
+                            setSubastaToCancel(null);
+                        }
+                    }}
+                >
+                    <DialogContent className="border-[#d8a63b] bg-[#171741] text-[#F2E199]">
+                        <DialogHeader>
+                            <DialogTitle className="text-[#F2E199]">Cancelar subasta</DialogTitle>
+                            <DialogDescription className="text-[#F2E199]/85">
+                                Esta accion cancelara la subasta
+                                {subastaToCancel?.objeto ? ` "${subastaToCancel.objeto}"` : " seleccionada"}
+                                . No podra recibir nuevas pujas.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setCancelDialogOpen(false)}
+                                disabled={actionLoadingId === subastaToCancel?.id}
+                                className="border-[#F2E199] bg-transparent text-[#F2E199] hover:border-[#6FB8E6] hover:bg-[#6FB8E6] hover:text-[#f2e199]"
+                            >
+                                Volver
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={handleCancel}
+                                disabled={actionLoadingId === subastaToCancel?.id}
+                                className="bg-[#ECB44D] text-[#171741] hover:bg-[#d8a63b]"
+                            >
+                                {actionLoadingId === subastaToCancel?.id ? "Cancelando..." : "Si, cancelar"}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
 
             </div>
         </div>

@@ -36,7 +36,7 @@ export default function Header() {
   const userEmail = "Invitado";
 
   const subasItems = [
-    { title: "Subastas", href: "/subastas", icon: <Film className="h-4 w-4" /> },
+    { title: "Subastas", href: "/subasta/activas", icon: <Film className="h-4 w-4" /> },
     {
       title: "Filtrar Subastas",
       href: "/subastas/filter",
@@ -63,6 +63,11 @@ export default function Header() {
       title: "Cuadros Subastables",
       href: "/CuadrosSubastables",
       icon: <ShoppingBasket className="h-4 w-4" />,
+    },
+    {
+      title: "Subastas",
+      href: "/subastas",
+      icon: <HandCoins className="h-4 w-4" />,
     }
   ];
 
