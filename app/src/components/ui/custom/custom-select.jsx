@@ -37,9 +37,9 @@ export function CustomSelect({ field, data = [], label, getOptionLabel, getOptio
                         className={cn(
                             "w-full justify-between rounded-xl font-normal text-base h-11 transition-all",
                             "border-input bg-background hover:bg-accent/50",
-                            error && "border-destructive focus-visible:ring-destructive",
                             !field.value && "text-muted-foreground"
                         )}
+                        style={error ? { borderColor: '#ECB44D', boxShadow: '0 0 0 2px #ECB44D' } : { borderColor: '#6FB8E6' }}
                     >
                         <span className="truncate">
                             {selectedLabel ? getOptionLabel(selectedLabel) : `Seleccione ${label}`}
@@ -87,8 +87,8 @@ export function CustomSelect({ field, data = [], label, getOptionLabel, getOptio
 
             {/* Mensaje de error optimizado */}
             {error && (
-                <p className="flex items-center gap-1.5 mt-1 text-sm font-medium text-destructive">
-                    <AlertCircle className="h-4 w-4" />
+                <p className="flex items-center gap-1.5 mt-1 text-sm font-medium" style={{ color: '#ECB44D' }}>
+                    <AlertCircle className="h-4 w-4" style={{ color: '#ECB44D' }} />
                     {error}
                 </p>
             )}

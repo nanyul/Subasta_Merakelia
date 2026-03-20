@@ -132,6 +132,7 @@ class Subasta
             handleException($e);
         }
     }
+    
     //PUT actualizar
     public function update()
     {

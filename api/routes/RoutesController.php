@@ -96,6 +96,11 @@ class RoutesController
         $param2     = $routesArray[3] ?? null;
         // echo "Controller: " . $controller . ", acción: " . $action . ", param1: " . $param1 . ", param2: " . $param2;
 
+        if (is_numeric($action)) {
+            $param1 = $action;
+            $action = null;
+        }
+
         try {
             if ($controller && class_exists($controller)) {
                 $response = new $controller();

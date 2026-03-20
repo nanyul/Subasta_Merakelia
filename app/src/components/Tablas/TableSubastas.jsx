@@ -157,15 +157,23 @@ export default function TableSubastas() {
 
     return (
         <div
-            className="min-h-screen bg-[#171741] px-4 py-8"
+            className="relative min-h-screen overflow-hidden bg-[#171741] px-4 py-8"
             style={{
-                backgroundImage: `linear-gradient(rgba(10,18,44,0.28), rgba(10,18,44,0.46)), url(${fondoTabla})`,
+                backgroundImage: `linear-gradient(rgba(7, 13, 34, 0.34), rgba(7, 13, 34, 0.68)), url(${fondoTabla})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center top",
                 backgroundRepeat: "no-repeat",
             }}
         >
-            <div className="mx-auto max-w-[1200px] py-6">
+            <div className="hero-stars-soft absolute inset-0 opacity-80" />
+            <div className="hero-stars absolute inset-0 opacity-90" />
+            <div
+                className="absolute inset-0"
+                style={{
+                    background: 'radial-gradient(circle at 18% 18%, rgba(111,184,230,0.16) 0%, rgba(111,184,230,0) 22%), radial-gradient(circle at 83% 16%, rgba(242,225,153,0.18) 0%, rgba(242,225,153,0) 18%), radial-gradient(circle at 52% 72%, rgba(236,180,77,0.14) 0%, rgba(236,180,77,0) 26%)',
+                }}
+            />
+            <div className="mx-auto max-w-[1200px] py-6 relative z-10">
 
                 {/* TITULO */}
                 <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -266,7 +274,7 @@ export default function TableSubastas() {
                         <EmptyState message="No hay subastas disponibles para este filtro." />
                     </div>
                 ) : (
-                    <div className="mx-auto mt-6 w-full max-w-6xl overflow-hidden rounded-lg border border-[#d8a63b] bg-transparent shadow-[0_16px_60px_rgba(12,18,46,0.18)]">
+                    <div className="mx-auto mt-6 w-full max-w-6xl overflow-hidden rounded-lg border border-[#ECB44D]/50 bg-transparent shadow-[0_20px_60px_rgba(12,18,46,0.42)]">
 
                         <Table className="min-w-[1000px]"> {/* Agrega un ancho mínimo para evitar que la tabla se colapse demasiado en pantallas pequeñas*/}
 
@@ -278,7 +286,7 @@ export default function TableSubastas() {
 
                                     <TableHead
                                         key={col.key}
-                                        className="h-9 border-r border-b border-[#d8a63b] bg-[#e3d38c] px-3 text-center text-sm font-bold uppercase tracking-wide text-[#171741] last:border-r-0 md:h-11 md:text-[0.92rem]"
+                                        className="h-9 border-r border-b border-[#ECB44D]/45 bg-[#194174]/55 px-3 text-center text-sm font-bold uppercase tracking-wide text-[#F2E199] last:border-r-0 md:h-11 md:text-[0.92rem]"
                                     >
                                         {col.label}
                                     </TableHead>
@@ -295,11 +303,11 @@ export default function TableSubastas() {
 
                                 <TableRow
                                     key={subasta.id}
-                                    className="border-0 bg-[#1a1a5a]/94 hover:bg-[#202068]/96 "
+                                    className="border-0 bg-[#194174]/28 hover:bg-[#194174]/38"
                                 >
 
                                     {/* IMAGEN */}
-                                    <TableCell className="border-r border-b border-[#b68f2f] text-center">
+                                    <TableCell className="border-r border-b border-[#ECB44D]/35 text-center">
 
                                         {subasta.imagen?.datos ? (
 
@@ -319,30 +327,30 @@ export default function TableSubastas() {
 
                                     </TableCell>
 
-                                    <TableCell className="border-r border-b border-[#b68f2f] px-3 py-2 text-center text-[#F2E199] w-[200px]">
+                                    <TableCell className="border-r border-b border-[#ECB44D]/35 px-3 py-2 text-center text-[#F2E199] w-[200px]">
                                         <div className="whitespace-normal break-words leading-tight">
                                             {subasta.objeto}
                                         </div>
                                     </TableCell>
 
-                                    <TableCell className="border-r border-b border-[#b68f2f] text-center text-[#F2E199]">
+                                    <TableCell className="border-r border-b border-[#ECB44D]/35 text-center text-[#F2E199]">
 
                                         {formatDate(subasta.fecha_inicio)}
                                     </TableCell>
 
-                                    <TableCell className="border-r border-b border-[#b68f2f] text-center text-[#F2E199]">
+                                    <TableCell className="border-r border-b border-[#ECB44D]/35 text-center text-[#F2E199]">
                                         {formatDate(subasta.fecha_fin)}
                                     </TableCell>
 
-                                    <TableCell className="border-r border-b border-[#b68f2f] text-center text-[#F2E199]">
+                                    <TableCell className="border-r border-b border-[#ECB44D]/35 text-center text-[#F2E199]">
                                         {formatPrice(subasta.precio_base)}
                                     </TableCell> 
 
-                                    <TableCell className="border-r border-b border-[#b68f2f] text-center text-[#F2E199]">
+                                    <TableCell className="border-r border-b border-[#ECB44D]/35 text-center text-[#F2E199]">
                                         {subasta.cantidad_pujas}
                                     </TableCell>
 
-                                    <TableCell className="border-r border-b border-[#b68f2f] text-center font-semibold">
+                                    <TableCell className="border-r border-b border-[#ECB44D]/35 text-center font-semibold">
 
                                         {(!subasta.estado || subasta.estado === "Activa") && (
                                             <span className="text-[#6FB8E6]">
@@ -371,7 +379,7 @@ export default function TableSubastas() {
                                     </TableCell>
 
                                     {/* ACCIONES */}
-                                    <TableCell className="border-b border-[#b68f2f]">
+                                    <TableCell className="border-b border-[#ECB44D]/35">
 
                                         <div className="flex items-center justify-center gap-1">
 

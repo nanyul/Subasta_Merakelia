@@ -18,6 +18,8 @@ import { HistorialPujas } from './components/Tablas/HistorialPujas'
 import { UpdateSubasta } from './components/Tablas/Form/UpdateSubasta'
 import { CreateSubasta } from './components/Tablas/Form/CreateSubasta'
 import { ListSubastas } from './components/Tablas/ListSubastas'
+import { CreateUser } from './components/Tablas/Form/CreateUser'
+import { UpdateUser } from './components/Tablas/Form/UpdateUser'
 const rutas = createBrowserRouter([
   {
     element: <Layout/>,
@@ -30,6 +32,8 @@ const rutas = createBrowserRouter([
        //Rutas componentes
       {path:"user", element: <TableUser/>},
       {path:"user/:id", element: <DetailUser />},
+      {path:"user/create", element: <CreateUser/>},
+      {path:"user/edit/:id", element: <UpdateUser/>},
       //Cuadros components
       {path:"CuadrosSubastables", element: <TableCuadros/>},
       {path:"CuadrosSubastables/:id", element: <DetailCuadro/>},

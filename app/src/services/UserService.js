@@ -9,6 +9,30 @@ class UserService {
   getUserById(UserId) {
     return axios.get(BASE_URL + '/' + UserId); //Get by ID
   }
+
+  createUser(user) {
+    return axios.post(BASE_URL, JSON.stringify(user), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
+
+  updateUser(user) {
+    return axios.put(BASE_URL, JSON.stringify(user), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
+
+  updateUserStatus(id) {
+    return axios.delete(BASE_URL + '/' + id, JSON.stringify({}), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
 }
 
 export default new UserService();
