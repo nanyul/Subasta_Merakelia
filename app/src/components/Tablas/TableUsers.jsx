@@ -50,7 +50,10 @@ export default function TableUsers() {
             setTogglingUserId(userId);
             const response = await UserService.updateUserStatus(userId);
             
-            if (response.data?.data) {
+            console.log('Response:', response);
+            
+            // Verificar si la solicitud fue exitosa
+            if (response.data?.success === true && response.data?.data) {
                 // Actualizar el usuario en la lista con los datos devueltos por el servidor
                 setUsers(users.map(user => 
                     user.id === userId 
@@ -58,6 +61,9 @@ export default function TableUsers() {
                         : user
                 ));
                 toast.success("Estado del usuario actualizado", { duration: 2000 });
+            } else if (response.data?.success === false) {
+                // El servidor devolvió un error (ej: usuario tiene subastas)
+                toast.error(response.data?.message || "Error al actualizar el estado del usuario", { duration: 2000 });
             }
         } catch (err) {
             console.error(err);

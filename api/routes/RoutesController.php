@@ -145,10 +145,15 @@ class RoutesController
 
                     case 'PUT':
                     case 'PATCH':
-                        if ($param1) {
+                        if ($action && method_exists($response, $action)) {
+                            // Llamar a método personalizado (ej: status)
+                            if ($param1) {
+                                $response->$action($param1);
+                            } else {
+                                $response->$action();
+                            }
+                        } elseif ($param1) {
                             $response->update($param1);
-                        } elseif ($action && method_exists($response, $action)) {
-                            $response->$action();
                         } else {
                             $response->update();
                         }

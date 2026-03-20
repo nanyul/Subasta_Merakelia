@@ -75,13 +75,19 @@ class User
     }
 
 
-    public function delete($param) 
+    public function status($param) 
     {
         try {
             $response = new Response();
             $user = new UserModel();
             $result = $user->delete($param);
-            $response->toJSON($result);
+            
+            // Si el resultado es null, significa que el usuario tiene subastas asociadas
+            if ($result === null) {
+                $response->toJSON(null, "No se puede desactivar un usuario que tiene subastas asociadas");
+            } else {
+                $response->toJSON($result);
+            }
         } catch (Exception $e) {
             $response->toJSON($result);
             handleException($e);

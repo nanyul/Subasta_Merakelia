@@ -27,10 +27,16 @@ class UserService {
   }
 
   updateUserStatus(id) {
-    return axios.delete(BASE_URL + '/' + id, JSON.stringify({}), {
+    return axios.put(BASE_URL + '/status/' + id, JSON.stringify({}), {
       headers: {
         'Content-Type': 'application/json'
       }
+    }).catch(error => {
+      // Si hay un error de respuesta (4xx, 5xx), devolver la respuesta de error
+      if (error.response) {
+        return error.response;
+      }
+      throw error;
     });
   }
 }
