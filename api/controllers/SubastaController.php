@@ -138,13 +138,9 @@ class Subasta
         try {
             $request = new Request();
             $response = new Response();
-            //Obtener json enviado
             $inputJSON = $request->getJSON();
-            //Instancia del modelo
             $subasta = new SubastaModel();
-            //Acción del modelo a ejecutar
             $result = $subasta->update($inputJSON);
-            //Dar respuesta
             $response->toJSON($result);
         } catch (Exception $e) {
             $response->toJSON($result);

@@ -147,7 +147,7 @@ export function CreateSubasta() {
             .number()
             .typeError("Solo acepta números")
             .required("El incremento mínimo es requerido")
-            .positive("El incremento mínimo debe ser mayor a 0"),
+            .min(50, "El incremento mínimo debe ser mayor o igual a 50"),
     });
 
     /*** React Hook Form ***/
@@ -244,7 +244,7 @@ export function CreateSubasta() {
             const response = await SubastaService.createSubasta(payload);
 
             if (response.data) {
-                toast.success("Subasta creada correctamente.", { duration: 3500 });
+                toast.success("Subasta creada correctamente.", { duration: 5000 });
                 navigate("/Subastas");
                 return;
             }
@@ -392,10 +392,10 @@ export function CreateSubasta() {
                                     <CustomInputField
                                         {...field}
                                         label="Incremento mínimo ($)"
-                                        placeholder="10.00"
+                                        placeholder="50.00"
                                         type="number"
                                         step="0.01"
-                                        min="0.01"
+                                        min="50"
                                         error={errors.incremento_minimo?.message}
                                     />
                                 )}

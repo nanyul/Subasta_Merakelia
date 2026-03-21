@@ -257,7 +257,7 @@ export function DetailSubasta() {
                         </Card>
 
                         {/* BOTÓN HISTORIAL */}
-                        {subasta.estado !== "Cancelada" && (
+                        {subasta.estado !== "Cancelada" && subasta.cantidad_pujas > 0 && (
                             <div className="flex justify-start">
                                 <Link to={`/subasta/pujas/${id}`}>
                                     <Button className="flex gap-2 border border-[#ECB44D] bg-[#171741]/70 px-3.5 text-xs text-[#F2E199] shadow-[0_0_18px_rgba(236,180,77,0.15)] hover:bg-[#194174] hover:text-[#F2E199] h-8">

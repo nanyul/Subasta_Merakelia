@@ -371,7 +371,7 @@ class SubastaModel
     // EDITAR SUBASTA
     // Solo permitido si: no ha iniciado Y no tiene pujas
     // Campos editables: fecha_inicio, fecha_fin, precio_base, incremento_minimo
-    // Validaciones directas en SQL (evita llamar a get() antes de editar)
+    // Validaciones directas en SQL (se evita llamar a get() antes de editar)
     // ─────────────────────────────────────────────
     public function update($objeto)
     {
