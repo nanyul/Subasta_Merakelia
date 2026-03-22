@@ -9,6 +9,36 @@ class UserService {
   getUserById(UserId) {
     return axios.get(BASE_URL + '/' + UserId); //Get by ID
   }
+
+  createUser(user) {
+    return axios.post(BASE_URL, JSON.stringify(user), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
+
+  updateUser(user) {
+    return axios.put(BASE_URL, JSON.stringify(user), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
+
+  updateUserStatus(id) {
+    return axios.put(BASE_URL + '/status/' + id, JSON.stringify({}), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).catch(error => {
+      // Si hay un error de respuesta (4xx, 5xx), devolver la respuesta de error
+      if (error.response) {
+        return error.response;
+      }
+      throw error;
+    });
+  }
 }
 
 export default new UserService();

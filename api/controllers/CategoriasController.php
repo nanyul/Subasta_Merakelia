@@ -1,5 +1,5 @@
 <?php
-class CategoriasController
+class Categorias
 {
     public function index() //All
     {

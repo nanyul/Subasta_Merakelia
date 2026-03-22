@@ -25,6 +25,11 @@ import {
     Gavel,
     Sparkles,
     ScrollText,
+    MapPin,
+    Brush,
+    Package,
+    Award,
+    Clock,
 } from "lucide-react";
 import { LoadingGrid } from '../ui/custom/LoadingGrid';
 import { EmptyState } from '../ui/custom/EmptyState';
@@ -119,6 +124,36 @@ export function DetailCuadro() {
             value: item.nombre_artista || 'Sin registrar',
             icon: Palette,
             accent: '#ECB44D',
+        },
+        {
+            label: 'Año de creación',
+            value: item.ano_creacion || 'Sin registrar',
+            icon: Clock,
+            accent: '#F2E199',
+        },
+        {
+            label: 'Técnica',
+            value: item.tecnica || 'Sin registrar',
+            icon: Brush,
+            accent: '#6FB8E6',
+        },
+        {
+            label: 'Material',
+            value: item.material_soporte || 'Sin registrar',
+            icon: Package,
+            accent: '#ECB44D',
+        },
+        {
+            label: 'Procedencia',
+            value: item.procedencia || 'Sin registrar',
+            icon: MapPin,
+            accent: '#6FB8E6',
+        },
+        {
+            label: 'Certificado',
+            value: item.certificado_autenticidad == 1 ? 'Sí' : 'No',
+            icon: Award,
+            accent: '#F2E199',
         },
         {
             label: 'Condicion',
@@ -292,7 +327,7 @@ export function DetailCuadro() {
                                         <div className="flex flex-wrap gap-1.5">
                                             {item.categorias.map((cat, index) => (
                                                 <Badge key={index} className="border border-[#ECB44D]/60 bg-[#194174]/60 px-2 py-0.5 text-[0.68rem] text-[#F2E199] hover:bg-[#194174]/60">
-                                                    {cat}
+                                                    {typeof cat === 'object' ? cat.descripcion : cat}
                                                 </Badge>
                                             ))}
                                         </div>

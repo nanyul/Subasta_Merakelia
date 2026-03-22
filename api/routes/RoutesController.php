@@ -61,7 +61,7 @@ class RoutesController
 
         // Gestión de imágenes
         if (isset($routesArray[0]) && $routesArray[0] === 'uploads') {
-            $filePath = __DIR__ . '/' . implode("/", $routesArray);
+            $filePath = dirname(dirname(__DIR__)) . '/' . implode("/", $routesArray);
             if (file_exists($filePath)) {
                 header('Content-Type: ' . mime_content_type($filePath));
                 readfile($filePath);
@@ -96,6 +96,11 @@ class RoutesController
         $param2     = $routesArray[3] ?? null;
         // echo "Controller: " . $controller . ", acción: " . $action . ", param1: " . $param1 . ", param2: " . $param2;
 
+        if (is_numeric($action)) {
+            $param1 = $action;
+            $action = null;
+        }
+
         try {
             if ($controller && class_exists($controller)) {
                 $response = new $controller();
@@ -117,9 +122,12 @@ class RoutesController
                                 // URL sin parámetros → /movie/recent
                                 $response->$action();
                             }
-                        } elseif (!$action) {
-                            // URL del tipo /movie
+                        } elseif (!$action && !$param1) {
+                            // URL del tipo /movie (sin parámetros)
                             $response->index();
+                        } elseif (!$action && $param1 && is_numeric($param1)) {
+                            // URL del tipo /movie/1 (después de normalización)
+                            $response->get($param1);
                         } else {
                             $json = [
                                 "success" => false,
@@ -140,10 +148,15 @@ class RoutesController
 
                     case 'PUT':
                     case 'PATCH':
-                        if ($param1) {
+                        if ($action && method_exists($response, $action)) {
+                            // Llamar a método personalizado (ej: status)
+                            if ($param1) {
+                                $response->$action($param1);
+                            } else {
+                                $response->$action();
+                            }
+                        } elseif ($param1) {
                             $response->update($param1);
-                        } elseif ($action && method_exists($response, $action)) {
-                            $response->$action();
                         } else {
                             $response->update();
                         }

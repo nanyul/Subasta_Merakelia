@@ -152,15 +152,23 @@ export default function TableSubastas() {
 
     return (
         <div
-            className="min-h-screen bg-[#171741] px-4 py-8"
+            className="relative min-h-screen overflow-hidden bg-[#171741] px-4 py-8"
             style={{
-                backgroundImage: `linear-gradient(rgba(10,18,44,0.28), rgba(10,18,44,0.46)), url(${fondoTabla})`,
+                backgroundImage: `linear-gradient(rgba(7, 13, 34, 0.34), rgba(7, 13, 34, 0.68)), url(${fondoTabla})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center top",
                 backgroundRepeat: "no-repeat",
             }}
         >
-            <div className="mx-auto max-w-[1200px] py-6">
+            <div className="hero-stars-soft absolute inset-0 opacity-80" />
+            <div className="hero-stars absolute inset-0 opacity-90" />
+            <div
+                className="absolute inset-0"
+                style={{
+                    background: 'radial-gradient(circle at 18% 18%, rgba(111,184,230,0.16) 0%, rgba(111,184,230,0) 22%), radial-gradient(circle at 83% 16%, rgba(242,225,153,0.18) 0%, rgba(242,225,153,0) 18%), radial-gradient(circle at 52% 72%, rgba(236,180,77,0.14) 0%, rgba(236,180,77,0) 26%)',
+                }}
+            />
+            <div className="mx-auto max-w-[1200px] py-6 relative z-10">
 
                 {/* TITULO */}
                 <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -261,7 +269,7 @@ export default function TableSubastas() {
                         <EmptyState message="No hay subastas disponibles para este filtro." />
                     </div>
                 ) : (
-                    <div className="mx-auto mt-6 w-full max-w-6xl overflow-hidden rounded-lg border border-[#d8a63b] bg-transparent shadow-[0_16px_60px_rgba(12,18,46,0.18)]">
+                    <div className="mx-auto mt-6 w-full max-w-6xl overflow-hidden rounded-lg border border-[#ECB44D]/50 bg-transparent shadow-[0_20px_60px_rgba(12,18,46,0.42)]">
 
                         <Table className="min-w-[1000px]"> {/* Agrega un ancho mínimo para evitar que la tabla se colapse demasiado en pantallas pequeñas*/}
 

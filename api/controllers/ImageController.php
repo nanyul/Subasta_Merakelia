@@ -1,18 +1,15 @@
 <?php
-//class Genre
-class image{
+//class Image
+class Image{
     //POST Crear
     public function create()
     {
         try {
-            $request = new Request();
             $response = new Response();
-            //Obtener json enviado
-            $inputFILE = $request->getBody();
             //Instancia del modelo
             $imagen = new ImageModel();
-            //Acción del modelo a ejecutar
-            $result = $imagen->uploadFile($inputFILE);
+            //Acción del modelo a ejecutar (pasamos null porque el modelo lee de $_FILES directamente)
+            $result = $imagen->uploadFile(null);
             //Dar respuesta
             $response->toJSON($result);
         } catch (Exception $e) {
@@ -26,7 +23,7 @@ class image{
         try {
             $response = new Response();
             $imagen = new ImageModel();
-            $result = $imagen->getImageMovie($id);
+            $result = $imagen->getImageCuadro($id);
             //Dar respuesta
             $response->toJSON($result);
         } catch (Exception $e) {

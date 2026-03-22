@@ -11,7 +11,7 @@ class UserModel
 	}
 	public function all()
 	{
-		
+
 		$vSql = "SELECT u.nombre, u.correo, u.id_rol, u.id,
 			IF(u.estado = 1, 'Activo', 'Inactivo') AS estado
 				FROM usuario u;";
@@ -19,11 +19,11 @@ class UserModel
 		//vResultado es un array de objetos = JSON
 		$vResultado = $this->enlace->ExecuteSQL($vSql);
 		if ($vResultado) { //Sino es Null
-			if (is_array($vResultado) && count($vResultado) > 0) { 
-				$rolM = new RolModel(); 
+			if (is_array($vResultado) && count($vResultado) > 0) {
+				$rolM = new RolModel();
 				foreach ($vResultado as $user) {
 					$rol = $rolM->get($user->id_rol);
-					$user->rol = $rol->descripcion; 
+					$user->rol = $rol->descripcion;
 				}
 			}
 		}
@@ -76,12 +76,67 @@ class UserModel
 	{
 
 		$vSql = "SELECT COUNT(*) AS cantidad FROM puja WHERE id_usuario=$idUser";
-		
+
 		$vResultado = $this->enlace->ExecuteSQL($vSql);
 		if ($vResultado) {
 			return $vResultado[0]->cantidad;
 		} else {
 			return 0;
 		}
+	}
+
+	//MANTENIMIENTOS
+	//
+	public function create($objeto)
+	{
+		$sql = "INSERT INTO usuario (correo, contrasena, nombre, fecha_registro, id_rol, estado) " .
+			"VALUES ('$objeto->correo', '$objeto->contrasena', '$objeto->nombre', " .
+			"'$objeto->fecha_registro', $objeto->id_rol, $objeto->estado)";
+
+		$idUser = $this->enlace->executeSQL_DML_last($sql);
+
+		return $this->get($idUser);
+	}
+
+	public function update($objeto)
+	{
+		$sql = "UPDATE usuario SET nombre='$objeto->nombre', correo='$objeto->correo' " .
+			"WHERE id=$objeto->id";
+
+		$this->enlace->executeSQL_DML($sql);
+
+		return $this->get($objeto->id);
+	}
+
+	public function delete($id)
+	{
+		// Obtener el estado actual
+		$sql = "SELECT estado, id_rol FROM usuario WHERE id=$id";
+
+		$result = $this->enlace->ExecuteSQL($sql);
+
+		if ($result && isset($result[0]->estado)) {
+			
+			// Verificar si el usuario es un subastador (id_rol == 2)
+			if ($result[0]->id_rol == 2) {
+				// Verificar si tiene subastas asociadas
+				$cantidadSubastas = $this->CantidadSubastas($id);
+				if ($cantidadSubastas > 0) {
+					// Usuario tiene subastas, no permitir desactivar
+					return null;
+				}
+			}
+			
+			$nuevoEstado = $result[0]->estado == 1 ? 0 : 1;
+
+			$sqlUpdate = "UPDATE usuario SET estado=$nuevoEstado WHERE id=$id";
+
+			$this->enlace->executeSQL_DML($sqlUpdate);
+
+			return $this->get($id);
+		}
+
+		return null;
+		
 	}
 }

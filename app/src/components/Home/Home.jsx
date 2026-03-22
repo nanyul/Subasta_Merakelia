@@ -79,12 +79,14 @@ const fallbackFeatured = [
 export function Home() {
   const [cuadrosDestacados, setCuadrosDestacados] = useState(fallbackFeatured);
 
-  const obtenerCategorias = (cuadro) =>
-    Array.isArray(cuadro.categorias)
-      ? cuadro.categorias.slice(0, 2)
-      : cuadro.categorias
-        ? [cuadro.categorias]
-        : ["Colección destacada"];
+  const obtenerCategorias = (cuadro) => {
+    if (Array.isArray(cuadro.categorias)) {
+      return cuadro.categorias.slice(0, 2).map(c => typeof c === 'object' ? c.descripcion : c);
+    } else if (cuadro.categorias) {
+      return [typeof cuadro.categorias === 'object' ? cuadro.categorias.descripcion : cuadro.categorias];
+    }
+    return ["Colección destacada"];
+  };
 
   useEffect(() => {
     const obtenerCuadrosDestacados = async () => {
