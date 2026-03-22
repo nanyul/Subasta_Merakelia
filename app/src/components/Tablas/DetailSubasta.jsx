@@ -201,7 +201,7 @@ export function DetailSubasta() {
                                         <div className="flex flex-wrap gap-1.5">
                                             {subasta.categorias.map((cat, index) => (
                                                 <Badge key={index} className="border border-[#ECB44D]/60 bg-[#194174]/60 px-2 py-0.5 text-[0.68rem] text-[#F2E199] hover:bg-[#194174]/60">
-                                                    {cat}
+                                                    {typeof cat === 'object' ? cat.descripcion : cat}
                                                 </Badge>
                                             ))}
                                         </div>

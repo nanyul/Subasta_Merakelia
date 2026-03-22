@@ -61,7 +61,7 @@ class RoutesController
 
         // Gestión de imágenes
         if (isset($routesArray[0]) && $routesArray[0] === 'uploads') {
-            $filePath = __DIR__ . '/' . implode("/", $routesArray);
+            $filePath = dirname(dirname(__DIR__)) . '/' . implode("/", $routesArray);
             if (file_exists($filePath)) {
                 header('Content-Type: ' . mime_content_type($filePath));
                 readfile($filePath);
@@ -122,9 +122,12 @@ class RoutesController
                                 // URL sin parámetros → /movie/recent
                                 $response->$action();
                             }
-                        } elseif (!$action) {
-                            // URL del tipo /movie
+                        } elseif (!$action && !$param1) {
+                            // URL del tipo /movie (sin parámetros)
                             $response->index();
+                        } elseif (!$action && $param1 && is_numeric($param1)) {
+                            // URL del tipo /movie/1 (después de normalización)
+                            $response->get($param1);
                         } else {
                             $json = [
                                 "success" => false,

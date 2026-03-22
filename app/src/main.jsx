@@ -20,6 +20,9 @@ import { CreateSubasta } from './components/Tablas/Form/CreateSubasta'
 import { ListSubastas } from './components/Tablas/ListSubastas'
 import { CreateUser } from './components/Tablas/Form/CreateUser'
 import { UpdateUser } from './components/Tablas/Form/UpdateUser'
+import { CreateCuadros } from './components/Tablas/Form/CreateCuadros'
+import { UpdateCuadros } from './components/Tablas/Form/UpdateCuadros'
+
 const rutas = createBrowserRouter([
   {
     element: <Layout/>,
@@ -36,8 +39,11 @@ const rutas = createBrowserRouter([
       {path:"user/edit/:id", element: <UpdateUser/>},
       //Cuadros components
       {path:"CuadrosSubastables", element: <TableCuadros/>},
-      {path:"CuadrosSubastables/:id", element: <DetailCuadro/>},
       {path:"CuadrosSubastables/galeria", element: <ListCuadros/>},
+      {path:"CuadrosSubastables/create", element: <CreateCuadros/>},
+      {path:"CuadrosSubastables/edit/:id", element: <UpdateCuadros/>},
+      {path:"CuadrosSubastables/:id", element: <DetailCuadro/>},
+
       //Subastas components
       {path:"Subastas",element: <TableSubastas/>},
       {path:"subasta/:id", element: <DetailSubasta /> },

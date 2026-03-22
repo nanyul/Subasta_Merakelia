@@ -10,9 +10,55 @@ class ImageModel
         $this->enlace = new MySqlConnect();
     }
     
-    public function uploadFile($object)
+    public function uploadFile($inputData)
     {
-        return false;
+        // Verificar que exista el archivo
+        if (!isset($_FILES['image'])) {
+            return false;
+        }
+
+        $file = $_FILES['image'];
+        $id_cuadro = isset($_POST['id_cuadro']) ? intval($_POST['id_cuadro']) : null;
+
+        // Validar que haya ID de cuadro
+        if (!$id_cuadro) {
+            return false;
+        }
+
+        // Validar extensión del archivo
+        $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($file_ext, $this->valid_extensions)) {
+            return false;
+        }
+
+        // Crear nombre único para el archivo
+        $new_filename = uniqid('img_') . '.' . $file_ext;
+        $upload_path = dirname(dirname(__DIR__)) . '/uploads/';
+
+        // Crear carpeta si no existe
+        if (!is_dir($upload_path)) {
+            mkdir($upload_path, 0755, true);
+        }
+
+        // Mover archivo
+        $target_file = $upload_path . $new_filename;
+        if (!move_uploaded_file($file['tmp_name'], $target_file)) {
+            return false;
+        }
+
+        // Guardar en base de datos
+        $sql = "INSERT INTO imagen (datos, fecha_registro) VALUES ('$new_filename', NOW())";
+        $id_imagen = $this->enlace->executeSQL_DML_last($sql);
+
+        if (!$id_imagen) {
+            return false;
+        }
+
+        // Asociar imagen con cuadro
+        $sql_assoc = "INSERT INTO cuadro_imagen (id_cuadro, id_imagen) VALUES ($id_cuadro, $id_imagen)";
+        $this->enlace->executeSQL_DML($sql_assoc);
+
+        return array('id' => $id_imagen, 'datos' => $new_filename);
     }
     
     public function getImageCuadro($idCuadro)

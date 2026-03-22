@@ -149,7 +149,7 @@ export default function TableCuadros() {
                                     </TableCell>
                                     <TableCell className="h-12 border-r border-b border-[#ECB44D]/35 px-3 py-1 text-center text-[0.62rem] text-[#F2E199] md:h-14 md:text-[0.72rem]">
                                         {Array.isArray(cuadro.categorias)
-                                            ? cuadro.categorias.join(", ")
+                                            ? cuadro.categorias.map(c => typeof c === 'object' ? c.descripcion : c).join(", ")
                                             : cuadro.categorias}
                                     </TableCell>
                                     <TableCell className="h-12 border-r border-b border-[#ECB44D]/35 px-3 py-1 text-center text-[0.62rem] text-[#F2E199] md:h-14 md:text-[0.72rem]">
@@ -178,9 +178,11 @@ export default function TableCuadros() {
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="size-8 text-[#6FB8E6] hover:bg-[#194174] hover:text-[#6FB8E6]">
-                                                            <Edit className="h-3.5 w-3.5" />
-                                                        </Button>
+                                                        <Link to={`/CuadrosSubastables/edit/${cuadro.id}`}>
+                                                            <Button variant="ghost" size="icon" className="size-8 text-[#6FB8E6] hover:bg-[#194174] hover:text-[#6FB8E6]">
+                                                                <Edit className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        </Link>
                                                     </TooltipTrigger>
                                                     <TooltipContent>Actualizar</TooltipContent>
                                                 </Tooltip>

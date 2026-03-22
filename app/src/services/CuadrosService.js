@@ -9,6 +9,22 @@ class CuadrosService {
   getCuadroById(CuadroId) {
     return axios.get(BASE_URL + '/' + CuadroId); //Get by ID
   }
+
+  createCuadro(cuadro) {
+    return axios.post(BASE_URL, JSON.stringify(cuadro), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
+
+  updateCuadro(cuadro) {
+    return axios.put(BASE_URL, JSON.stringify(cuadro), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
 }
 
 export default new CuadrosService();
