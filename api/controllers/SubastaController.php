@@ -58,6 +58,18 @@ class Subasta
             $response = new Response();
             $subasta  = new SubastaModel();
             $result   = $subasta->getProgramadas();
+
+            if (is_array($result) && count($result) === 0) {
+                http_response_code(200);
+                echo json_encode([
+                    "success" => true,
+                    "status"  => 200,
+                    "message" => "Solicitud exitosa",
+                    "data"    => []
+                ], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
             $response->toJSON($result);
         } catch (Exception $e) {
             $response->toJSON(null);
