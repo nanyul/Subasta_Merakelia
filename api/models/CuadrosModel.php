@@ -168,4 +168,36 @@ class CuadrosModel
 		return $this->get($objeto->id);
 	}
 
+	public function delete($id)
+	{
+		// Obtener el estado actual del cuadro
+		$sql = "SELECT id_estado_cuadro FROM cuadro_subastable WHERE id=$id";
+		$result = $this->enlace->ExecuteSQL($sql);
+
+		if (!$result || !isset($result[0]->id_estado_cuadro)) {
+			return null;
+		}
+
+		$estadoActual = $result[0]->id_estado_cuadro;
+
+		// Verificar si el cuadro tiene subastas asociadas
+		$sqlSubastas = "SELECT COUNT(*) AS cantidad FROM subasta WHERE id_cuadro=$id AND id_estado_subasta=1";
+		$subastaResult = $this->enlace->ExecuteSQL($sqlSubastas);
+
+		if ($subastaResult && isset($subastaResult[0]->cantidad) && $subastaResult[0]->cantidad > 0) {
+			// El cuadro tiene subastas activas, no permitir cambio de estado
+			return null;
+		}
+
+		// Toggle del estado: si está Publicado (1) pasa a Retirado (3), y viceversa
+		$nuevoEstado = ($estadoActual == 1) ? 3 : 1;
+
+		$sqlUpdate = "UPDATE cuadro_subastable SET id_estado_cuadro=$nuevoEstado WHERE id=$id";
+		$this->enlace->executeSQL_DML($sqlUpdate);
+
+		$cuadroActualizado = $this->get($id);
+		// Devolver el primer elemento si es un array
+		return (is_array($cuadroActualizado) && count($cuadroActualizado) > 0) ? $cuadroActualizado[0] : $cuadroActualizado;
+	}
+
 }

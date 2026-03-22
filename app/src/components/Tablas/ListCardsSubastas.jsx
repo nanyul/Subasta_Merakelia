@@ -104,8 +104,8 @@ export function ListCardsSubastas({ data }) {
                                 <Calendar className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#ECB44D]" />
                                 <span>
                                     {Array.isArray(item.categorias)
-                                        ? item.categorias.join(", ")
-                                        : item.categorias || "Sin categoria"}
+                                        ? item.categorias.map(c => typeof c === 'object' ? c.descripcion : c).join(", ")
+                                        : typeof item.categorias === 'object' ? item.categorias.descripcion : item.categorias || "Sin categoria"}
                                 </span>
                             </div>
                         )}

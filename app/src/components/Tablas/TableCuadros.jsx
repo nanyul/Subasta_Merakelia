@@ -8,18 +8,20 @@ import {
     TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Edit, Plus, Trash2, ArrowLeft, BookUser, Film } from "lucide-react";
+import { Edit, Plus, ArrowLeft, BookUser, Film } from "lucide-react";
 import { useEffect, useState } from "react";
 import { LoadingGrid } from "../ui/custom/LoadingGrid";
 import { ErrorAlert } from "../ui/custom/ErrorAlert";
 import { EmptyState } from "../ui/custom/EmptyState";
 import fondoTabla from "@/assets/fondoTabla.png";
+import toast from "react-hot-toast";
 
 //Services
 import CuadrosService from "@/services/CuadrosService";
@@ -42,6 +44,35 @@ export default function TableCuadros() {
     const [cuadros, setCuadros] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [togglingCuadroId, setTogglingCuadroId] = useState(null);
+
+    /*** Función para retirar cuadro (borrado lógico) ***/
+    const handleToggleCuadroStatus = async (cuadroId) => {
+        try {
+            setTogglingCuadroId(cuadroId);
+            const response = await CuadrosService.updateCuadroStatus(cuadroId);
+            
+            // Verificar si la solicitud fue exitosa
+            if (response.data?.success === true && response.data?.data) {
+                // Actualizar el cuadro en la lista con los datos devueltos por el servidor
+                setCuadros(cuadros.map(cuadro => 
+                    cuadro.id === cuadroId 
+                        ? response.data.data
+                        : cuadro
+                ));
+                toast.success("Estado del cuadro actualizado", { duration: 2000 });
+            } else if (response.data?.success === false) {
+                // El servidor devolvió un error
+                toast.error(response.data?.message || "Error al actualizar el estado del cuadro", { duration: 2000 });
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Error al actualizar el estado del cuadro", { duration: 2000 });
+        } finally {
+            setTogglingCuadroId(null);
+        }
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -150,7 +181,7 @@ export default function TableCuadros() {
                                     <TableCell className="h-12 border-r border-b border-[#ECB44D]/35 px-3 py-1 text-center text-[0.62rem] text-[#F2E199] md:h-14 md:text-[0.72rem]">
                                         {Array.isArray(cuadro.categorias)
                                             ? cuadro.categorias.map(c => typeof c === 'object' ? c.descripcion : c).join(", ")
-                                            : cuadro.categorias}
+                                            : typeof cuadro.categorias === 'object' ? cuadro.categorias.descripcion : cuadro.categorias}
                                     </TableCell>
                                     <TableCell className="h-12 border-r border-b border-[#ECB44D]/35 px-3 py-1 text-center text-[0.62rem] text-[#F2E199] md:h-14 md:text-[0.72rem]">
                                         {cuadro.estado_condicion}
@@ -190,11 +221,17 @@ export default function TableCuadros() {
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="size-8 text-[#ECB44D] hover:bg-[#194174] hover:text-[#F2E199]">
-                                                            <Trash2 className="h-3.5 w-3.5" />
-                                                        </Button>
+                                                        <div className="flex items-center gap-2 px-2 py-1">
+                                                            <Switch
+                                                                checked={cuadro.estado_cuadro === 'Publicado'}
+                                                                onCheckedChange={() => handleToggleCuadroStatus(cuadro.id)}
+                                                                disabled={togglingCuadroId === cuadro.id}
+                                                            />
+                                                        </div>
                                                     </TooltipTrigger>
-                                                    <TooltipContent>Eliminar</TooltipContent>
+                                                    <TooltipContent>
+                                                        {cuadro.estado_cuadro === 'Publicado' ? 'Retirar cuadro' : 'Publicar cuadro'}
+                                                    </TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
                                         </div>

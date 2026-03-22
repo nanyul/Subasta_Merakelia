@@ -50,8 +50,6 @@ export default function TableUsers() {
             setTogglingUserId(userId);
             const response = await UserService.updateUserStatus(userId);
             
-            console.log('Response:', response);
-            
             // Verificar si la solicitud fue exitosa
             if (response.data?.success === true && response.data?.data) {
                 // Actualizar el usuario en la lista con los datos devueltos por el servidor
@@ -77,9 +75,7 @@ export default function TableUsers() {
         const fetchData = async () => {
         try {
             const response = await UserService.getUsers();//Llama servicio para obtener usuarios
-            console.log(response) //Lo muestra en al consola
             const result = response.data; //Verificacion
-            console.log(result) //Lo muestra en al consola
             if (result.success) {
                 setUsers(result.data || []);
             } else {
@@ -240,7 +236,7 @@ export default function TableUsers() {
                 onClick={() => navigate(-1)}
                 className="mt-6 flex h-9 items-center gap-2 border border-[#ECB44D] bg-[#171741]/70 px-4 text-sm text-[#F2E199] hover:bg-[#194174] hover:text-[#F2E199]"
             >
-                <ArrowLeft x className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4" />
                 Regresar
             </Button>
             </div>

@@ -257,7 +257,7 @@ export function CreateCuadros() {
             }
 
             toast.success("Cuadro creado correctamente", { duration: 3000 });
-            navigate("/cuadros");
+            navigate("/CuadrosSubastables");
         } catch (err) {
             console.error(err);
             setError(err.message || "Error al crear el cuadro");

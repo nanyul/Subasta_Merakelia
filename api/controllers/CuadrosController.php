@@ -77,4 +77,24 @@ class CuadrosSubastables
     }
     
 
+    public function status($param) 
+    {
+        try {
+            $response = new Response();
+            $cuadros = new CuadrosModel();
+            $result = $cuadros->delete($param);
+            
+            // Si el resultado es null, significa que el cuadro tiene una subasta activa
+            if ($result === null) {
+                $response->toJSON(null, "No se puede cambiar el estado de un cuadro que está en una subasta activa");
+            } else {
+                $response->toJSON($result);
+            }
+        } catch (Exception $e) {
+            $response->toJSON($result);
+            handleException($e);
+        }
+    }
+    
+
 }
