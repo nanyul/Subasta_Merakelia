@@ -11,15 +11,17 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 
 // icons
-import { Save, ArrowLeft, ShieldCheck, UserRound } from "lucide-react";
+import { Save, ArrowLeft, ShieldCheck, UserRound, X } from "lucide-react";
 
 // servicios
 import CuadrosService from "../../../services/CuadrosService";
 import CategoriasService from "../../../services/CategoriasService";
+import ImageService from "../../../services/ImageService";
 
 // componentes reutilizables
 import { CustomInputField } from "../../ui/custom/custom-input-field";
 import { CustomSelect } from "../../ui/custom/custom-select";
+import { getImageUrl } from "../../../lib/imageUtils";
 import fondoTabla from "@/assets/fondoTabla.png";
 
 const CONDICIONES = [
@@ -50,6 +52,10 @@ export function UpdateCuadros() {
     const [cuadroData, setCuadroData] = useState(null);
     const [dataCategorias, setDataCategorias] = useState([]);
     const [categoriasSeleccionadas, setCategoriasSeleccionadas] = useState([]);
+    const [imagenesActuales, setImagenesActuales] = useState([]);
+    const [imagenesSeleccionadas, setImagenesSeleccionadas] = useState([]);
+    const [imagenesPreview, setImagenesPreview] = useState([]);
+    const [imagenesAEliminar, setImagenesAEliminar] = useState([]);
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingData, setIsLoadingData] = useState(true);
@@ -182,6 +188,15 @@ export function UpdateCuadros() {
                 } else {
                     setCategoriasSeleccionadas([]);
                 }
+
+                // Cargar imágenes actuales del cuadro
+                if (cuadro.imagenes && Array.isArray(cuadro.imagenes)) {
+                    console.log("Imágenes cargadas:", cuadro.imagenes);
+                    setImagenesActuales(cuadro.imagenes);
+                } else {
+                    console.log("No hay imágenes o no es array:", cuadro.imagenes);
+                    setImagenesActuales([]);
+                }
             } catch (err) {
                 if (err.name !== "AbortError") {
                     console.error("Error al cargar datos:", err);
@@ -201,6 +216,40 @@ export function UpdateCuadros() {
                 ? prev.filter((id) => id !== categoriaId)
                 : [...prev, categoriaId]
         );
+    };
+
+    /*** Manejo de carga de imágenes ***/
+    const handleImagenesChange = (e) => {
+        const files = Array.from(e.target.files || []);
+
+        if (imagenesSeleccionadas.length + imagenesActuales.length - imagenesAEliminar.length + files.length > 5) {
+            toast.error("Máximo 5 imágenes permitidas", { duration: 2000 });
+            return;
+        }
+
+        const nuevasImagenes = [...imagenesSeleccionadas, ...files];
+        setImagenesSeleccionadas(nuevasImagenes);
+
+        // Crear previews
+        files.forEach((file) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagenesPreview((prev) => [...prev, reader.result]);
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    /*** Remover imagen actual ***/
+    const removerImagenActual = (imagenId) => {
+        setImagenesAEliminar((prev) => [...prev, imagenId]);
+        setImagenesActuales((prev) => prev.filter((img) => img.id !== imagenId));
+    };
+
+    /*** Remover imagen nueva ***/
+    const removerImagenNueva = (index) => {
+        setImagenesSeleccionadas((prev) => prev.filter((_, i) => i !== index));
+        setImagenesPreview((prev) => prev.filter((_, i) => i !== index));
     };
 
     /*** Submit - actualizar cuadro ***/
@@ -234,6 +283,14 @@ export function UpdateCuadros() {
             const response = await CuadrosService.updateCuadro(cuadroPayload);
 
             if (response.data?.success || response.data?.data) {
+                // Subir nuevas imágenes
+                for (const archivo of imagenesSeleccionadas) {
+                    const formData = new FormData();
+                    formData.append("image", archivo);
+                    formData.append("id_cuadro", id);
+                    await ImageService.createImage(formData);
+                }
+
                 toast.success("Cuadro actualizado correctamente", { duration: 3000 });
                 navigate("/CuadrosSubastables");
             } else if (response.data?.error) {
@@ -564,6 +621,103 @@ export function UpdateCuadros() {
                             </div>
                         </div>
                     )}
+
+                    {/* Imágenes Actuales */}
+                    {imagenesActuales.length > 0 && (
+                        <div>
+                            <Label className="mb-3 block text-sm font-medium text-[#F2E199]">
+                                Imágenes actuales
+                            </Label>
+                            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                                {imagenesActuales.map((imagen) => {
+                                    const imageUrl = getImageUrl(imagen.datos);
+                                    console.log(`Imagen ${imagen.id}:`, imageUrl);
+                                    return (
+                                        <div key={imagen.id} className="relative">
+                                            <div className="h-32 w-full rounded-md border border-[#6FB8E6]/30 overflow-hidden bg-[#194174]/40">
+                                                <img
+                                                    src={imageUrl}
+                                                    alt="Cuadro"
+                                                    className="h-full w-full object-cover"
+                                                    onError={(e) => {
+                                                        console.error("Error cargando imagen:", imageUrl);
+                                                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23194174' width='100' height='100'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='%236FB8E6' font-size='12'%3EError%3C/text%3E%3C/svg%3E";
+                                                    }}
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removerImagenActual(imagen.id)}
+                                                disabled={!canEdit || isSubmitting}
+                                                className="absolute -right-2 -top-2 rounded-full bg-[#ECB44D] p-1 hover:bg-[#ECB44D]/80 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <X className="h-4 w-4 text-[#171741]" />
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <p className="mt-2 text-xs text-[#6FB8E6]">
+                                Total: {imagenesActuales.length} imagen{imagenesActuales.length !== 1 ? "es" : ""}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Nuevas Imágenes */}
+                    <div>
+                        <Label className="mb-3 block text-sm font-medium text-[#F2E199]">
+                            Agregar imágenes (máximo {5 - imagenesActuales.length + imagenesAEliminar.length} más)
+                        </Label>
+                        <div className="rounded-md border-2 border-dashed border-[#6FB8E6]/40 bg-[#194174]/10 p-6" style={{ opacity: !canEdit || isLoadingData || isSubmitting ? 0.5 : 1, pointerEvents: !canEdit || isLoadingData || isSubmitting ? 'none' : 'auto' }}>
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={handleImagenesChange}
+                                disabled={imagenesSeleccionadas.length >= (5 - imagenesActuales.length + imagenesAEliminar.length) || !canEdit || isSubmitting}
+                                className="hidden"
+                                id="nuevas-imagenes-input"
+                            />
+                            <label
+                                htmlFor="nuevas-imagenes-input"
+                                className="cursor-pointer text-center"
+                            >
+                                <p className="text-sm text-[#F2E199]">
+                                    Sube imágenes adicionales del cuadro
+                                </p>
+                                <p className="mt-1 text-xs text-[#6FB8E6]">
+                                    Soporta: JPG, PNG, GIF, WebP
+                                </p>
+                            </label>
+                        </div>
+
+                        {/* Vista previa de nuevas imágenes */}
+                        {imagenesPreview.length > 0 && (
+                            <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                                {imagenesPreview.map((preview, index) => (
+                                    <div key={index} className="relative">
+                                        <img
+                                            src={preview}
+                                            alt={`Preview ${index + 1}`}
+                                            className="h-24 w-full rounded-md border border-[#6FB8E6]/30 object-cover"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removerImagenNueva(index)}
+                                            disabled={isSubmitting}
+                                            className="absolute -right-2 -top-2 rounded-full bg-[#ECB44D] p-1 hover:bg-[#ECB44D]/80 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <X className="h-4 w-4 text-[#171741]" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <p className="mt-2 text-xs text-[#6FB8E6]">
+                            Nuevas imágenes: {imagenesSeleccionadas.length}
+                        </p>
+                    </div>
 
                     {/* Botones */}
                     <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-between">
