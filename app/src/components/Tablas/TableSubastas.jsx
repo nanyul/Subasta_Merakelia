@@ -67,6 +67,19 @@ export default function TableSubastas() {
         return new Date(date).toLocaleString("es-ES").replace(", ", " ");
     };
 
+    const canCancelSubasta = (subasta) => {
+        const ahora = new Date();
+        const fechaInicioRaw = String(subasta?.fecha_inicio ?? "");
+        const fechaInicio = new Date(fechaInicioRaw.replace(" ", "T"));
+        const fechaValida = !Number.isNaN(fechaInicio.getTime());
+        const noHaIniciado = fechaValida && fechaInicio > ahora;
+
+        const cantidadPujas = Number(subasta?.cantidad_pujas ?? 0);
+        const sinPujas = Number.isNaN(cantidadPujas) || cantidadPujas === 0;
+
+        return noHaIniciado || sinPujas;
+    };
+
     const fetchSubastas = async () => {
         try {
             setLoading(true);
@@ -383,6 +396,7 @@ export default function TableSubastas() {
                                                     const sinPujas = Number.isNaN(cantidadPujas) || cantidadPujas === 0;
 
                                                     const puedeEditar = fechaValida && fechaInicio > ahora && sinPujas;
+                                                    const puedeCancelar = canCancelSubasta(subasta);
 
                                                     return (
                                                         <>
@@ -426,7 +440,7 @@ export default function TableSubastas() {
                                                                 </TooltipProvider>
                                                             )}
 
-                                                            {subasta.estado !== "Cancelada" && subasta.estado !== "Finalizada" && (
+                                                            {subasta.estado !== "Cancelada" && subasta.estado !== "Finalizada" && puedeCancelar && (
                                                                 <TooltipProvider>
                                                                     <Tooltip>
                                                                         <TooltipTrigger asChild>
