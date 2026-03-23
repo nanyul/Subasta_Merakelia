@@ -163,10 +163,15 @@ class RoutesController
                         break;
 
                     case 'DELETE':
-                        if ($param1) {
+                        if ($action && method_exists($response, $action)) {
+                            // Llamar a método personalizado (ej: deleteAllByCuadro)
+                            if ($param1) {
+                                $response->$action($param1);
+                            } else {
+                                $response->$action();
+                            }
+                        } elseif ($param1) {
                             $response->delete($param1);
-                        } elseif ($action && method_exists($response, $action)) {
-                            $response->$action();
                         } else {
                             $response->delete();
                         }

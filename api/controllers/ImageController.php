@@ -32,4 +32,20 @@ class Image{
             
         }
     }
+
+    public function deleteAllByCuadro($idCuadro)
+    {
+        try {
+            $response = new Response();
+            $imagen = new ImageModel();
+            $result = $imagen->deleteAllImagesByCuadro($idCuadro);
+            //Dar respuesta
+            $response->toJSON([
+                'success' => $result,
+                'message' => $result ? 'Todas las imágenes fueron eliminadas correctamente' : 'Error al eliminar las imágenes'
+            ]);
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
 }

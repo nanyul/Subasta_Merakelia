@@ -283,12 +283,26 @@ export function UpdateCuadros() {
             const response = await CuadrosService.updateCuadro(cuadroPayload);
 
             if (response.data?.success || response.data?.data) {
-                // Subir nuevas imágenes
+                // Eliminar TODAS las imágenes anteriores del cuadro
+                try {
+                    await ImageService.deleteAllByCuadro(id);
+                    console.log("Todas las imágenes anteriores fueron eliminadas");
+                } catch (err) {
+                    console.error("Error al eliminar imágenes anteriores:", err);
+                }
+
+                // Subir TODAS las nuevas imágenes (incluyendo las que se querían mantener)
+                const totalImagenesNuevas = imagenesSeleccionadas.length + imagenesActuales.length - imagenesAEliminar.length;
+                
                 for (const archivo of imagenesSeleccionadas) {
                     const formData = new FormData();
                     formData.append("image", archivo);
                     formData.append("id_cuadro", id);
-                    await ImageService.createImage(formData);
+                    try {
+                        await ImageService.createImage(formData);
+                    } catch (err) {
+                        console.error("Error al subir imagen:", err);
+                    }
                 }
 
                 toast.success("Cuadro actualizado correctamente", { duration: 3000 });
