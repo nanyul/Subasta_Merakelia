@@ -283,12 +283,28 @@ export function UpdateCuadros() {
             const response = await CuadrosService.updateCuadro(cuadroPayload);
 
             if (response.data?.success || response.data?.data) {
-                // Subir nuevas imágenes
-                for (const archivo of imagenesSeleccionadas) {
-                    const formData = new FormData();
-                    formData.append("image", archivo);
-                    formData.append("id_cuadro", id);
-                    await ImageService.createImage(formData);
+                if (imagenesAEliminar.length > 0 || imagenesSeleccionadas.length > 0) {
+                    if (imagenesAEliminar.length > 0) {
+                        try {
+                            await ImageService.deleteAllByCuadro(id);
+                            console.log("Imágenes eliminadas");
+                        } catch (err) {
+                            console.error("Error al eliminar imágenes:", err);
+                        }
+                    }
+
+                    if (imagenesSeleccionadas.length > 0) {
+                        for (const archivo of imagenesSeleccionadas) {
+                            const formData = new FormData();
+                            formData.append("image", archivo);
+                            formData.append("id_cuadro", id);
+                            try {
+                                await ImageService.createImage(formData);
+                            } catch (err) {
+                                console.error("Error al subir imagen:", err);
+                            }
+                        }
+                    }
                 }
 
                 toast.success("Cuadro actualizado correctamente", { duration: 3000 });

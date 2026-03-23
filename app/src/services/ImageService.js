@@ -9,6 +9,10 @@ class ImageService {
                 'Accept':'multipart/form-data'
             }
         })
-    } 
+    }
+    
+    deleteAllByCuadro(idCuadro){
+        return axios.delete(`${BASE_URL}/deleteAllByCuadro/${idCuadro}`);
+    }
 }
 export default new ImageService()

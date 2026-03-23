@@ -66,7 +66,7 @@ class CuadrosModel
                 $imageM = new ImageModel(); 
                 $subastaM = new SubastaModel(); 
                 foreach ($vResultado as $cuadro) {
-                    $categorias = $categoriaM->getByCuadro($cuadro->id); // Usar id del cuadro
+                    $categorias = $categoriaM->getByCuadro($cuadro->id);
                     // Devolver array de categorías con id y descripcion
                     $cuadro->categorias = $categorias ?: [];
                     $cuadro->imagen = $imageM->getImageCuadro($cuadro->id);
@@ -87,12 +87,11 @@ class CuadrosModel
 
 	public function create($objeto)
 	{
-		// Preparar año de creación - si es null, vacío, 0, o fuera de rango, usar NULL en SQL
+	
 		$ano_creacion = (isset($objeto->ano_creacion) && $objeto->ano_creacion && $objeto->ano_creacion != 0) 
 			? intval($objeto->ano_creacion) 
 			: "NULL";
-		
-		// Validar rango de año (MySQL YEAR acepta 1901-2155)
+
 		if ($ano_creacion !== "NULL" && ($ano_creacion < 1901 || $ano_creacion > 2155)) {
 			$ano_creacion = "NULL";
 		}
@@ -108,7 +107,6 @@ class CuadrosModel
 
 		$idCuadro = $this->enlace->executeSQL_DML_last($sql);
 
-		// Asociar categorías si existen
 		foreach ($objeto->categorias as $value) {
 			$sql = "INSERT INTO cuadro_categoria (id_cuadro, id_categoria) VALUES ($idCuadro, $value)";
 			$this->enlace->executeSQL_DML($sql);
@@ -119,12 +117,11 @@ class CuadrosModel
 
 	public function update($objeto)
 	{
-		// Preparar año de creación - si es null, vacío, 0, o fuera de rango, usar NULL en SQL
+		
 		$ano_creacion = (isset($objeto->ano_creacion) && $objeto->ano_creacion && $objeto->ano_creacion != 0) 
 			? intval($objeto->ano_creacion) 
 			: "NULL";
-		
-		// Validar rango de año (MySQL YEAR acepta 1901-2155)
+
 		if ($ano_creacion !== "NULL" && ($ano_creacion < 1901 || $ano_creacion > 2155)) {
 			$ano_creacion = "NULL";
 		}
@@ -152,13 +149,11 @@ class CuadrosModel
 
 		$this->enlace->executeSQL_DML($sql);
 
-		// Actualizar categorías si existen
 		if (isset($objeto->categorias) && is_array($objeto->categorias) && count($objeto->categorias) > 0) {
-			// Eliminar categorías antiguas
+
 			$sqlDelete = "DELETE FROM cuadro_categoria WHERE id_cuadro=$objeto->id";
 			$this->enlace->executeSQL_DML($sqlDelete);
 
-			// Insertar nuevas categorías
 			foreach ($objeto->categorias as $id_categoria) {
 				$sqlInsert = "INSERT INTO cuadro_categoria (id_cuadro, id_categoria) VALUES ($objeto->id, $id_categoria)";
 				$this->enlace->executeSQL_DML($sqlInsert);
@@ -170,7 +165,7 @@ class CuadrosModel
 
 	public function delete($id)
 	{
-		// Obtener el estado actual del cuadro
+
 		$sql = "SELECT id_estado_cuadro FROM cuadro_subastable WHERE id=$id";
 		$result = $this->enlace->ExecuteSQL($sql);
 
@@ -179,24 +174,22 @@ class CuadrosModel
 		}
 
 		$estadoActual = $result[0]->id_estado_cuadro;
-
-		// Verificar si el cuadro tiene subastas asociadas
+		
 		$sqlSubastas = "SELECT COUNT(*) AS cantidad FROM subasta WHERE id_cuadro=$id AND id_estado_subasta=1";
 		$subastaResult = $this->enlace->ExecuteSQL($sqlSubastas);
 
 		if ($subastaResult && isset($subastaResult[0]->cantidad) && $subastaResult[0]->cantidad > 0) {
-			// El cuadro tiene subastas activas, no permitir cambio de estado
 			return null;
 		}
 
-		// Toggle del estado: si está Publicado (1) pasa a Retirado (3), y viceversa
+		
 		$nuevoEstado = ($estadoActual == 1) ? 3 : 1;
 
 		$sqlUpdate = "UPDATE cuadro_subastable SET id_estado_cuadro=$nuevoEstado WHERE id=$id";
 		$this->enlace->executeSQL_DML($sqlUpdate);
 
 		$cuadroActualizado = $this->get($id);
-		// Devolver el primer elemento si es un array
+		
 		return (is_array($cuadroActualizado) && count($cuadroActualizado) > 0) ? $cuadroActualizado[0] : $cuadroActualizado;
 	}
 

@@ -93,4 +93,33 @@ class ImageModel
         $vResultado = $this->enlace->ExecuteSQL($vSql);
         return !empty($vResultado) ? $vResultado : [];
     }
+
+    public function deleteAllImagesByCuadro($idCuadro)
+    {
+        $idCuadro = intval($idCuadro);
+
+        // Obtener todas las imágenes del cuadro
+        $vSql = "SELECT i.id, i.datos
+                FROM imagen i
+                JOIN cuadro_imagen c ON c.id_cuadro = $idCuadro
+                WHERE i.id = c.id_imagen;";
+        $imagenes = $this->enlace->ExecuteSQL($vSql);
+
+        // Eliminar relaciones cuadro_imagen
+        $sql_delete_assoc = "DELETE FROM cuadro_imagen WHERE id_cuadro = $idCuadro;";
+        $this->enlace->executeSQL_DML($sql_delete_assoc);
+
+        // Eliminar archivos del servidor
+        foreach ($imagenes as $imagen) {
+            $upload_path = dirname(dirname(__DIR__)) . '/uploads/' . $imagen['datos'];
+            if (file_exists($upload_path)) {
+                unlink($upload_path);
+            }
+        }
+
+        // Eliminar registros de imágenes (opcional, si quieres limpiar también la tabla imagen)
+        // $sql_delete_images = "DELETE FROM imagen WHERE id IN (SELECT id FROM imagen WHERE id IN (" . implode(',', array_column($imagenes, 'id')) . "))";
+
+        return true;
+    }
 }

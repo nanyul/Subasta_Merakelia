@@ -39,7 +39,7 @@ const extractArrayFromResponse = (response) => {
         }
     }
 
-    console.warn('❌ No se encontró array en la respuesta');
+    console.warn(' No se encontró array en la respuesta');
     console.warn('Retornando array vacío');
     return [];
 };

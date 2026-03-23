@@ -110,14 +110,13 @@ class UserModel
 
 	public function delete($id)
 	{
-		// Obtener el estado actual
 		$sql = "SELECT estado, id_rol FROM usuario WHERE id=$id";
 
 		$result = $this->enlace->ExecuteSQL($sql);
 
 		if ($result && isset($result[0]->estado)) {
 			
-			// Verificar si el usuario es un subastador (id_rol == 2)
+			// ¿Es vendedor?
 			if ($result[0]->id_rol == 2) {
 				// Verificar si tiene subastas asociadas
 				$cantidadSubastas = $this->CantidadSubastas($id);
