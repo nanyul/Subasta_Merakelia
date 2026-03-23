@@ -283,25 +283,27 @@ export function UpdateCuadros() {
             const response = await CuadrosService.updateCuadro(cuadroPayload);
 
             if (response.data?.success || response.data?.data) {
-                // Eliminar TODAS las imágenes anteriores del cuadro
-                try {
-                    await ImageService.deleteAllByCuadro(id);
-                    console.log("Todas las imágenes anteriores fueron eliminadas");
-                } catch (err) {
-                    console.error("Error al eliminar imágenes anteriores:", err);
-                }
+                if (imagenesAEliminar.length > 0 || imagenesSeleccionadas.length > 0) {
+                    if (imagenesAEliminar.length > 0) {
+                        try {
+                            await ImageService.deleteAllByCuadro(id);
+                            console.log("Imágenes eliminadas");
+                        } catch (err) {
+                            console.error("Error al eliminar imágenes:", err);
+                        }
+                    }
 
-                // Subir TODAS las nuevas imágenes (incluyendo las que se querían mantener)
-                const totalImagenesNuevas = imagenesSeleccionadas.length + imagenesActuales.length - imagenesAEliminar.length;
-                
-                for (const archivo of imagenesSeleccionadas) {
-                    const formData = new FormData();
-                    formData.append("image", archivo);
-                    formData.append("id_cuadro", id);
-                    try {
-                        await ImageService.createImage(formData);
-                    } catch (err) {
-                        console.error("Error al subir imagen:", err);
+                    if (imagenesSeleccionadas.length > 0) {
+                        for (const archivo of imagenesSeleccionadas) {
+                            const formData = new FormData();
+                            formData.append("image", archivo);
+                            formData.append("id_cuadro", id);
+                            try {
+                                await ImageService.createImage(formData);
+                            } catch (err) {
+                                console.error("Error al subir imagen:", err);
+                            }
+                        }
                     }
                 }
 
