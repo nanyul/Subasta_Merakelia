@@ -45,7 +45,6 @@ const subastaColumns = [
     { key: "objeto", label: "Objeto" },
     { key: "fecha_inicio", label: "Fecha inicio" },
     { key: "fecha_fin", label: "Fecha cierre" },
-    { key: "precio_base", label: "Precio base" },
     { key: "cantidad_pujas", label: "Pujas" },
     { key: "estado", label: "Estado" },
     { key: "actions", label: "Acciones" },
@@ -63,13 +62,22 @@ export default function TableSubastas() {
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
     const [subastaToCancel, setSubastaToCancel] = useState(null);
 
-    const formatPrice = (price) => {
-        return `$ ${Number(price).toFixed(2)}`;
-    };
-
     const formatDate = (date) => {
         if (!date) return "—";
         return new Date(date).toLocaleString("es-ES").replace(", ", " ");
+    };
+
+    const canCancelSubasta = (subasta) => {
+        const ahora = new Date();
+        const fechaInicioRaw = String(subasta?.fecha_inicio ?? "");
+        const fechaInicio = new Date(fechaInicioRaw.replace(" ", "T"));
+        const fechaValida = !Number.isNaN(fechaInicio.getTime());
+        const noHaIniciado = fechaValida && fechaInicio > ahora;
+
+        const cantidadPujas = Number(subasta?.cantidad_pujas ?? 0);
+        const sinPujas = Number.isNaN(cantidadPujas) || cantidadPujas === 0;
+
+        return noHaIniciado || sinPujas;
     };
 
     const fetchSubastas = async () => {
@@ -187,82 +195,82 @@ export default function TableSubastas() {
 
                     <div className="flex flex-wrap items-center justify-end gap-2">
 
-                    {/* FILTROS */}
-                    <div className="inline-flex items-center gap-2 rounded-full border border-[#6FB8E6]/40 bg-[#194174]/55 px-3 py-1.5 text-[#F2E199]">
+                        {/* FILTROS */}
+                        <div className="inline-flex items-center gap-2 rounded-full border border-[#6FB8E6]/40 bg-[#194174]/55 px-3 py-1.5 text-[#F2E199]">
 
-                        <Badge
-                            className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
+                            <Badge
+                                className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
                                 ${filtro === "todas"
-                                    ? "bg-[#ECB44D] text-[#171741] border-[#ECB44D]"
-                                    : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#ECB44D]/20 hover:border-[#ECB44D]"
-                                }`}
-                            onClick={() => setFiltro("todas")}
-                        >
-                            Todas
-                        </Badge>
+                                        ? "bg-[#ECB44D] text-[#171741] border-[#ECB44D]"
+                                        : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#ECB44D]/20 hover:border-[#ECB44D]"
+                                    }`}
+                                onClick={() => setFiltro("todas")}
+                            >
+                                Todas
+                            </Badge>
 
-                        <Badge
-                            className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
+                            <Badge
+                                className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
                                 ${filtro === "borradores"
-                                    ? "bg-[#F2E199] text-[#171741] border-[#F2E199]"
-                                    : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#F2E199]/20 hover:border-[#F2E199]"
-                                }`}
-                            onClick={() => setFiltro("borradores")}
-                        >
-                            Borradores
-                        </Badge>
+                                        ? "bg-[#F2E199] text-[#171741] border-[#F2E199]"
+                                        : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#F2E199]/20 hover:border-[#F2E199]"
+                                    }`}
+                                onClick={() => setFiltro("borradores")}
+                            >
+                                Borradores
+                            </Badge>
 
-                        <Badge
-                            className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
+                            <Badge
+                                className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
                                 ${filtro === "activas"
-                                    ? "bg-[#6FB8E6] text-[#171741] border-[#6FB8E6]"
-                                    : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#6FB8E6]/20 hover:border-[#6FB8E6]"
-                                }`}
-                            onClick={() => setFiltro("activas")}
-                        >
-                            Activas
-                        </Badge>
+                                        ? "bg-[#6FB8E6] text-[#171741] border-[#6FB8E6]"
+                                        : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#6FB8E6]/20 hover:border-[#6FB8E6]"
+                                    }`}
+                                onClick={() => setFiltro("activas")}
+                            >
+                                Activas
+                            </Badge>
 
-                        <Badge
-                            className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
+                            <Badge
+                                className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
                                 ${filtro === "finalizadas"
-                                    ? "bg-[#ECB44D] text-[#171741] border-[#ECB44D]"
-                                    : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#ECB44D]/20 hover:border-[#ECB44D]"
-                                }`}
-                            onClick={() => setFiltro("finalizadas")}
-                        >
-                            Finalizadas
-                        </Badge>
+                                        ? "bg-[#ECB44D] text-[#171741] border-[#ECB44D]"
+                                        : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#ECB44D]/20 hover:border-[#ECB44D]"
+                                    }`}
+                                onClick={() => setFiltro("finalizadas")}
+                            >
+                                Finalizadas
+                            </Badge>
 
-                        <Badge
-                            className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
+                            <Badge
+                                className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
                                 ${filtro === "canceladas"
-                                    ? "bg-[#ECB44D] text-[#171741] border-[#ECB44D]" 
-                                    : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#ECB44D]/20 hover:border-[#ECB44D]"
-                                }`}
-                            onClick={() => setFiltro("canceladas")}
-                        >
-                            Canceladas
-                        </Badge>
-                    </div>
+                                        ? "bg-[#ECB44D] text-[#171741] border-[#ECB44D]"
+                                        : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#ECB44D]/20 hover:border-[#ECB44D]"
+                                    }`}
+                                onClick={() => setFiltro("canceladas")}
+                            >
+                                Canceladas
+                            </Badge>
+                        </div>
 
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    asChild
-                                    variant="outline"
-                                    size="icon"
-                                    className="size-9 border-[#ECB44D] bg-[#171741]/70 text-[#F2E199] shadow-[0_0_18px_rgba(236,180,77,0.18)] hover:bg-[#194174] hover:text-[#F2E199]"
-                                >
-                                    <Link to="/subasta/create">
-                                        <Plus className="h-4 w-4" />
-                                    </Link>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Crear subasta</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        asChild
+                                        variant="outline"
+                                        size="icon"
+                                        className="size-9 border-[#ECB44D] bg-[#171741]/70 text-[#F2E199] shadow-[0_0_18px_rgba(236,180,77,0.18)] hover:bg-[#194174] hover:text-[#F2E199]"
+                                    >
+                                        <Link to="/subasta/create">
+                                            <Plus className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Crear subasta</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
 
                 </div>
@@ -276,214 +284,228 @@ export default function TableSubastas() {
                 ) : (
                     <div className="mx-auto mt-6 w-full max-w-6xl overflow-hidden rounded-lg border border-[#ECB44D]/50 bg-transparent shadow-[0_20px_60px_rgba(12,18,46,0.42)]">
 
-                        <Table className="min-w-[1000px]"> {/* Agrega un ancho mínimo para evitar que la tabla se colapse demasiado en pantallas pequeñas*/}
+                        <Table className="table-fixed min-w-[1000px] border-separate border-spacing-0"> {/* Agrega un ancho mínimo para evitar que la tabla se colapse demasiado en pantallas pequeñas*/}
 
-                        <TableHeader>
+                            <TableHeader>
 
-                            <TableRow className="border-0 hover:bg-transparent">
+                                <TableRow className="border-0 hover:bg-transparent">
 
-                                {subastaColumns.map((col) => (
+                                    {subastaColumns.map((col) => (
 
-                                    <TableHead
-                                        key={col.key}
-                                        className="h-9 border-r border-b border-[#ECB44D]/45 bg-[#194174]/55 px-3 text-center text-sm font-bold uppercase tracking-wide text-[#F2E199] last:border-r-0 md:h-11 md:text-[0.92rem]"
-                                    >
-                                        {col.label}
-                                    </TableHead>
+                                        <TableHead
+                                            key={col.key}
+                                            className="h-9 border-r border-b border-[#ECB44D]/45 bg-[#194174]/55 px-3 text-center text-sm font-bold uppercase tracking-wide text-[#F2E199] last:border-r-0 md:h-11 md:text-[0.92rem]"
+                                        >
+                                            {col.label}
+                                        </TableHead>
 
-                                ))}
-
-                            </TableRow>
-
-                        </TableHeader>
-
-                        <TableBody>
-
-                            {subastasFiltradas.map((subasta) => (
-
-                                <TableRow
-                                    key={subasta.id}
-                                    className="border-0 bg-[#194174]/28 hover:bg-[#194174]/38"
-                                >
-
-                                    {/* IMAGEN */}
-                                    <TableCell className="border-r border-b border-[#ECB44D]/35 text-center">
-
-                                        {subasta.imagen?.datos ? (
-
-                                            <img
-                                                src={`${BASE_URL}/${subasta.imagen.datos}`}
-                                                alt={subasta.objeto}
-                                                className="w-16 h-16 object-cover rounded-md border mx-auto"
-                                            />
-
-                                        ) : (
-
-                                            <div className="w-16 h-16 bg-muted flex items-center justify-center rounded-md mx-auto">
-                                                <ImageIcon className="w-6 h-6 text-muted-foreground" />
-                                            </div>
-
-                                        )}
-
-                                    </TableCell>
-
-                                    <TableCell className="border-r border-b border-[#ECB44D]/35 px-3 py-2 text-center text-[#F2E199] w-[200px]">
-                                        <div className="whitespace-normal break-words leading-tight">
-                                            {subasta.objeto}
-                                        </div>
-                                    </TableCell>
-
-                                    <TableCell className="border-r border-b border-[#ECB44D]/35 text-center text-[#F2E199]">
-
-                                        {formatDate(subasta.fecha_inicio)}
-                                    </TableCell>
-
-                                    <TableCell className="border-r border-b border-[#ECB44D]/35 text-center text-[#F2E199]">
-                                        {formatDate(subasta.fecha_fin)}
-                                    </TableCell>
-
-                                    <TableCell className="border-r border-b border-[#ECB44D]/35 text-center text-[#F2E199]">
-                                        {formatPrice(subasta.precio_base)}
-                                    </TableCell> 
-
-                                    <TableCell className="border-r border-b border-[#ECB44D]/35 text-center text-[#F2E199]">
-                                        {subasta.cantidad_pujas}
-                                    </TableCell>
-
-                                    <TableCell className="border-r border-b border-[#ECB44D]/35 text-center font-semibold">
-
-                                        {(!subasta.estado || subasta.estado === "Activa") && (
-                                            <span className="text-[#6FB8E6]">
-                                                Activa
-                                            </span>
-                                        )}
-
-                                        {subasta.estado === "Programada" && (
-                                            <span className="text-[#F2E199]">
-                                                Programada
-                                            </span>
-                                        )}
-
-                                        {subasta.estado === "Finalizada" && (
-                                            <span className="text-[#ECB44D]">
-                                                Finalizada
-                                            </span>
-                                        )}
-
-                                        {subasta.estado === "Cancelada" && (
-                                            <span className="text-[#F2E199]">
-                                                Cancelada
-                                            </span>
-                                        )}
-
-                                    </TableCell>
-
-                                    {/* ACCIONES */}
-                                    <TableCell className="border-b border-[#ECB44D]/35">
-
-                                        <div className="flex items-center justify-center gap-1">
-
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Link to={`/subasta/edit/${subasta.id}`}>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="size-8 text-[#F2E199] hover:bg-[#194174]"
-                                                            >
-                                                                <Pencil className="h-4 w-4" />
-                                                            </Button>
-                                                        </Link>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>Editar subasta</TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-
-                                            {subasta.estado === "Programada" && (
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                disabled={actionLoadingId === subasta.id}
-                                                                onClick={() => handlePublish(subasta.id)}
-                                                                className="size-8 text-[#6FB8E6] hover:bg-[#194174] disabled:opacity-50"
-                                                            >
-                                                                <Send className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Publicar subasta</TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            )}
-
-                                            {subasta.estado !== "Cancelada" && subasta.estado !== "Finalizada" && (
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                disabled={actionLoadingId === subasta.id}
-                                                                onClick={() => openCancelDialog(subasta)}
-                                                                className="size-8 text-[#F2E199] hover:bg-[#194174] disabled:opacity-50"
-                                                            >
-                                                                <Ban className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Cancelar subasta</TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            )}
-
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Link to={`/subasta/${subasta.id}`}>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="size-8 text-[#6FB8E6] hover:bg-[#194174]"
-                                                            >
-                                                                <Eye className="h-4 w-4" />
-                                                            </Button>
-                                                        </Link>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>Ver detalle</TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-
-                                            {subasta.estado !== "Cancelada" && subasta.estado !== "Programada" && (
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Link to={`/subasta/pujas/${subasta.id}`}>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="size-8 text-[#ECB44D] hover:bg-[#194174]"
-                                                                >
-                                                                    <Gavel className="h-4 w-4" />
-                                                                </Button>
-                                                            </Link>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Historial de pujas</TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            )}
-
-                                        </div>
-
-                                    </TableCell>
-
+                                    ))}
                                 </TableRow>
 
-                            ))}
-                        </TableBody>
+                            </TableHeader>
+
+                            <TableBody>
+
+                                {subastasFiltradas.map((subasta) => (
+
+                                    <TableRow
+                                        key={subasta.id}
+                                        className="border-0 bg-[#194174]/28 hover:bg-[#194174]/38"
+                                    >
+
+                                        {/* IMAGEN */}
+                                        <TableCell className="border-r border-b border-[#ECB44D]/35 text-center">
+
+                                            {subasta.imagen?.datos ? (
+
+                                                <img
+                                                    src={`${BASE_URL}/${subasta.imagen.datos}`}
+                                                    alt={subasta.objeto}
+                                                    className="w-16 h-16 object-cover rounded-md border mx-auto"
+                                                />
+
+                                            ) : (
+
+                                                <div className="w-16 h-16 bg-muted flex items-center justify-center rounded-md mx-auto">
+                                                    <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                                                </div>
+
+                                            )}
+
+                                        </TableCell>
+
+                                        <TableCell className="border-r border-b border-[#ECB44D]/35 px-3 py-2 text-center text-[#F2E199] w-[200px]">
+                                            <div className="whitespace-normal break-words leading-tight">
+                                                {subasta.objeto}
+                                            </div>
+                                        </TableCell>
+
+                                        <TableCell className="border-r border-b border-[#ECB44D]/35 text-center text-[#F2E199]">
+
+                                            {formatDate(subasta.fecha_inicio)}
+                                        </TableCell>
+
+                                        <TableCell className="border-r border-b border-[#ECB44D]/35 text-center text-[#F2E199]">
+                                            {formatDate(subasta.fecha_fin)}
+                                        </TableCell>
+
+                                        <TableCell className="border-r border-b border-[#ECB44D]/35 text-center text-[#F2E199]">
+                                            {subasta.cantidad_pujas}
+                                        </TableCell>
+
+                                        <TableCell className="border-r border-b border-[#ECB44D]/35 text-center font-semibold">
+
+                                            {(!subasta.estado || subasta.estado === "Activa") && (
+                                                <span className="text-[#6FB8E6]">
+                                                    Activa
+                                                </span>
+                                            )}
+
+                                            {subasta.estado === "Programada" && (
+                                                <span className="text-[#F2E199]">
+                                                    Programada
+                                                </span>
+                                            )}
+
+                                            {subasta.estado === "Finalizada" && (
+                                                <span className="text-[#ECB44D]">
+                                                    Finalizada
+                                                </span>
+                                            )}
+
+                                            {subasta.estado === "Cancelada" && (
+                                                <span className="text-[#F2E199]">
+                                                    Cancelada
+                                                </span>
+                                            )}
+
+                                        </TableCell>
+
+                                        {/* ACCIONES */}
+                                        <TableCell className="border-b border-[#ECB44D]/35">
+
+                                            <div className="flex items-center justify-center gap-1">
+
+
+                                                {(() => {
+                                                    const ahora = new Date();
+                                                    const fechaInicioRaw = String(subasta.fecha_inicio ?? "");
+                                                    const fechaInicio = new Date(fechaInicioRaw.replace(" ", "T"));
+                                                    const fechaValida = !Number.isNaN(fechaInicio.getTime());
+                                                    const cantidadPujas = Number(subasta.cantidad_pujas ?? 0);
+                                                    const sinPujas = Number.isNaN(cantidadPujas) || cantidadPujas === 0;
+
+                                                    const puedeEditar = fechaValida && fechaInicio > ahora && sinPujas;
+                                                    const puedeCancelar = canCancelSubasta(subasta);
+
+                                                    return (
+                                                        <>
+                                                            {/* EDITAR (solo si cumple condiciones) */}
+                                                            {puedeEditar && (
+                                                                <TooltipProvider>
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger asChild>
+                                                                            <Link to={`/subasta/edit/${subasta.id}`}>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="icon"
+                                                                                    className="size-8 text-[#F2E199] hover:bg-[#194174]"
+                                                                                >
+                                                                                    <Pencil className="h-4 w-4" />
+                                                                                </Button>
+                                                                            </Link>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>Editar subasta</TooltipContent>
+                                                                    </Tooltip>
+                                                                </TooltipProvider>
+                                                            )}
+
+                                                            {subasta.estado === "Programada" && (
+                                                                <TooltipProvider>
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger asChild>
+                                                                            <Button
+                                                                                type="button"
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                disabled={actionLoadingId === subasta.id}
+                                                                                onClick={() => handlePublish(subasta.id)}
+                                                                                className="size-8 text-[#6FB8E6] hover:bg-[#194174] disabled:opacity-50"
+                                                                            >
+                                                                                <Send className="h-4 w-4" />
+                                                                            </Button>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>Publicar subasta</TooltipContent>
+                                                                    </Tooltip>
+                                                                </TooltipProvider>
+                                                            )}
+
+                                                            {subasta.estado !== "Cancelada" && subasta.estado !== "Finalizada" && puedeCancelar && (
+                                                                <TooltipProvider>
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger asChild>
+                                                                            <Button
+                                                                                type="button"
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                disabled={actionLoadingId === subasta.id}
+                                                                                onClick={() => openCancelDialog(subasta)}
+                                                                                className="size-8 text-[#F2E199] hover:bg-[#194174] disabled:opacity-50"
+                                                                            >
+                                                                                <Ban className="h-4 w-4" />
+                                                                            </Button>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>Cancelar subasta</TooltipContent>
+                                                                    </Tooltip>
+                                                                </TooltipProvider>
+                                                            )}
+
+                                                            <TooltipProvider>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Link to={`/subasta/${subasta.id}`}>
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                className="size-8 text-[#6FB8E6] hover:bg-[#194174]"
+                                                                            >
+                                                                                <Eye className="h-4 w-4" />
+                                                                            </Button>
+                                                                        </Link>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>Ver detalle</TooltipContent>
+                                                                </Tooltip>
+                                                            </TooltipProvider>
+
+                                                            {subasta.estado !== "Cancelada" && subasta.estado !== "Programada" && !sinPujas && (
+                                                                <TooltipProvider>
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger asChild>
+                                                                            <Link to={`/subasta/pujas/${subasta.id}`}>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="icon"
+                                                                                    className="size-8 text-[#ECB44D] hover:bg-[#194174]"
+                                                                                >
+                                                                                    <Gavel className="h-4 w-4" />
+                                                                                </Button>
+                                                                            </Link>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>Historial de pujas</TooltipContent>
+                                                                    </Tooltip>
+                                                                </TooltipProvider>
+                                                            )}
+                                                        </>
+                                                    );
+                                                })()}
+                                            </div>
+
+                                        </TableCell>
+
+                                    </TableRow>
+
+                                ))}
+                            </TableBody>
 
                         </Table>
 

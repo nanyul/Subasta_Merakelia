@@ -59,7 +59,7 @@ export function UpdateSubasta() {
             .number()
             .typeError("Solo acepta números")
             .required("El incremento mínimo es requerido")
-            .positive("El incremento mínimo debe ser mayor a 0"),
+            .min(50, "El incremento mínimo debe ser mayor o igual a 50"),
     });
 
     /*** React Hook Form ***/
@@ -149,7 +149,7 @@ export function UpdateSubasta() {
 
             const response = await SubastaService.updateSubasta({ id, ...dataForm });
             if (response.data?.success || response.data?.data) {
-                toast.success(`Subasta #${id} actualizada correctamente.`, { duration: 3000 });
+                toast.success(`Subasta #${id} actualizada correctamente.`, { duration: 5000 });
                 navigate("/subastas");
             } else if (response.data?.error || response.error) {
                 setError(response.data?.error || response.error);
@@ -216,12 +216,6 @@ export function UpdateSubasta() {
                     </div>
                 )}
 
-                {!canEdit && subastaInfo && (
-                    <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-300/10 px-4 py-3 text-sm text-amber-100">
-                        Esta subasta no puede editarse: debe no haber iniciado y no tener pujas registradas.
-                    </div>
-                )}
-
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -285,9 +279,10 @@ export function UpdateSubasta() {
                                     <CustomInputField
                                         {...field}
                                         label="Incremento mínimo ($)"
-                                        placeholder="10.00"
+                                        placeholder="50.00"
                                         type="number"
                                         step="0.01"
+                                        min="50"
                                         error={errors.incremento_minimo?.message}
                                         disabled={!canEdit || isLoadingData || isSubmitting}
                                     />

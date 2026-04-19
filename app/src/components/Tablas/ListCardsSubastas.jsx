@@ -33,7 +33,8 @@ export function ListCardsSubastas({ data }) {
             {data && data.map((item) => (
                 <Card
                     key={item.id}
-                    className="group flex h-full flex-col overflow-hidden border-[#ECB44D]/50 shadow-[0_18px_54px_rgba(12,18,46,0.34)] backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_72px_rgba(12,18,46,0.42)]"
+                    className={`group flex h-full flex-col overflow-hidden border-[#ECB44D]/50 shadow-[0_18px_54px_rgba(12,18,46,0.34)] backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_72px_rgba(12,18,46,0.42)] ${item.estado === "Activa" ? "ring-1 ring-[#ECB44D]/40" : ""
+                        }`}
                     style={{
                         background: "linear-gradient(180deg, rgba(33,52,101,0.94) 0%, rgba(23,23,65,0.95) 52%, rgba(19,22,78,0.96) 100%)",
                     }}
@@ -62,11 +63,22 @@ export function ListCardsSubastas({ data }) {
                                     <ImageIcon className="h-16 w-16" />
                                 </div>
                             )}
+
+                            {/* Estado principal */}
                             {item.estado && (
                                 <Badge
                                     className="absolute right-2.5 top-2.5 border border-[#ECB44D]/70 bg-[#ECB44D] px-2.5 py-1 text-[0.68rem] font-bold text-[#171741] shadow-[0_0_16px_rgba(236,180,77,0.24)] md:text-xs"
                                 >
                                     {item.estado}
+                                </Badge>
+                            )}
+
+                            {/* Indicador EN VIVO para subastas activas */}
+                            {item.estado === "Activa" && (
+                                <Badge
+                                    className="absolute left-2.5 top-2.5 border border-green-500 bg-green-600/90 px-2 py-0.5 text-[0.6rem] font-bold text-white animate-pulse"
+                                >
+                                    ● EN VIVO
                                 </Badge>
                             )}
                         </div>
@@ -114,6 +126,7 @@ export function ListCardsSubastas({ data }) {
                     {/* Acciones */}
                     <div className="flex justify-end gap-2 border-t border-[#ECB44D]/30 px-3.5 py-2.5">
                         <TooltipProvider>
+                            {/* Botón Ver Detalle */}
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button
@@ -126,8 +139,26 @@ export function ListCardsSubastas({ data }) {
                                         </Link>
                                     </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Ver detalle</TooltipContent>
+                                <TooltipContent>Ver detalle de la subasta</TooltipContent>
                             </Tooltip>
+
+                            {/* Botón Participar en Vivo - SOLO para subastas activas */}
+                            {item.estado === "Activa" && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            size="icon"
+                                            className="size-8 border border-[#ECB44D] bg-[#ECB44D]/20 text-[#ECB44D] shadow-[0_0_18px_rgba(236,180,77,0.25)] hover:bg-[#ECB44D] hover:text-[#171741]"
+                                            asChild
+                                        >
+                                            <Link to={`/subasta/en-vivo/${item.id}`}>
+                                                <Gavel className="h-3.5 w-3.5" />
+                                            </Link>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Participar en subasta en vivo</TooltipContent>
+                                </Tooltip>
+                            )}
                         </TooltipProvider>
                     </div>
                 </Card>

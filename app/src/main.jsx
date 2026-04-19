@@ -18,6 +18,7 @@ import { HistorialPujas } from './components/Tablas/HistorialPujas'
 import { UpdateSubasta } from './components/Tablas/Form/UpdateSubasta'
 import { CreateSubasta } from './components/Tablas/Form/CreateSubasta'
 import { ListSubastas } from './components/Tablas/ListSubastas'
+import { SubastaEnVivo } from './components/Subasta/SubastaEnVivo'
 import { CreateUser } from './components/Tablas/Form/CreateUser'
 import { UpdateUser } from './components/Tablas/Form/UpdateUser'
 import { CreateCuadros } from './components/Tablas/Form/CreateCuadros'
@@ -50,7 +51,8 @@ const rutas = createBrowserRouter([
       {path:"subasta/activas", element: <ListSubastas />},
       {path:"subasta/pujas/:id", element: <HistorialPujas />},
       {path:"subasta/edit/:id", element: <UpdateSubasta />},
-      {path:"subasta/create", element: <CreateSubasta />}
+      {path:"subasta/create", element: <CreateSubasta />},
+      {path:"subasta/en-vivo/:id", element: <SubastaEnVivo />},
     ]
   }
 ])
