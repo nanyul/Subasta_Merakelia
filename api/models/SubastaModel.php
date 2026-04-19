@@ -76,6 +76,7 @@ class SubastaModel
                     s.id,
                     s.id_cuadro,
                     s.fecha_inicio,
+                     s.id_estado_subasta,
                     s.fecha_fin,
                     s.precio_base,
                     s.incremento_minimo
@@ -100,6 +101,9 @@ class SubastaModel
 
                     // Cantidad de pujas 
                     $subasta->cantidad_pujas = $this->CantidadPujas($subasta->id);
+
+                    
+                    $subasta->estado = "Activa";  // ← LÍNEA SIMPLE
 
                     // Limpiar campos innecesarios
                     unset($subasta->id_cuadro);
@@ -367,12 +371,11 @@ class SubastaModel
         return $this->get($idSubasta);
     }
  
-    // ─────────────────────────────────────────────
+
     // EDITAR SUBASTA
     // Solo permitido si: no ha iniciado Y no tiene pujas
     // Campos editables: fecha_inicio, fecha_fin, precio_base, incremento_minimo
     // Validaciones directas en SQL (se evita llamar a get() antes de editar)
-    // ─────────────────────────────────────────────
     public function update($objeto)
     {
         // Verificar existencia + fecha_inicio + cantidad_pujas en una sola consulta
@@ -413,11 +416,10 @@ class SubastaModel
         return $this->get($objeto->id);
     }
  
-    // ─────────────────────────────────────────────
+
     // PUBLICAR SUBASTA
     // Cambia estado: Programada (4) → Activa (1)
     // Solo si fecha_inicio es válida (no en el pasado)
-    // ─────────────────────────────────────────────
     public function publish($id)
     {
         // Verificar existencia + estado actual + fecha_inicio en una sola consulta
@@ -456,11 +458,10 @@ class SubastaModel
         return $this->get($id);
     }
  
-    // ─────────────────────────────────────────────
+
     // CANCELAR SUBASTA
     // Permitido si: no ha iniciado O no tiene pujas
     // Cambia estado a Cancelada (3)
-    // ─────────────────────────────────────────────
     public function cancel($id)
     {
         // Verificar existencia + estado + fecha_inicio + pujas en una sola consulta
@@ -503,5 +504,94 @@ class SubastaModel
         return $this->get($id);
     }
 
+
+// ─────────────────────────────────────────────
+// CIERRE AUTOMÁTICO
+// Cambia estado Activa(1) → Finalizada(2) si venció fecha_fin
+// Retorna true si se acaba de cerrar
+// ─────────────────────────────────────────────
+public function verificarCierre($id_subasta)
+{
+    $sqlCheck = "SELECT id, id_estado_subasta, fecha_fin
+                 FROM subasta
+                 WHERE id = $id_subasta;";
+    $result = $this->enlace->ExecuteSQL($sqlCheck);
+
+    if (!is_array($result) || count($result) === 0) return false;
+
+    $subasta = $result[0];
+
+    if ($subasta->id_estado_subasta != 1) return false;
+
+    $ahora = new DateTime();
+    $fin   = new DateTime($subasta->fecha_fin);
+
+    if ($ahora > $fin) {
+        $this->enlace->executeSQL_DML(
+            "UPDATE subasta SET id_estado_subasta = 2 WHERE id = $id_subasta;"
+        );
+        return true;
+    }
+
+    return false;
+}
+
+// ─────────────────────────────────────────────
+// PUJA MÁS ALTA de una subasta
+// ─────────────────────────────────────────────
+public function getPujaMaxima($id_subasta)
+{
+    $vSql = "SELECT p.id, p.monto, p.id_usuario, u.nombre AS nombre_usuario
+             FROM puja p
+             INNER JOIN usuario u ON u.id = p.id_usuario
+             WHERE p.id_subasta = $id_subasta
+             ORDER BY p.monto DESC
+             LIMIT 1;";
+
+    $result = $this->enlace->ExecuteSQL($vSql);
+
+    return (is_array($result) && count($result) > 0) ? $result[0] : null;
+}
+
+// ─────────────────────────────────────────────
+// VENDEDOR de una subasta
+// ─────────────────────────────────────────────
+public function getVendedor($id_subasta)
+{
+    $vSql = "SELECT u.id, u.nombre
+             FROM subasta s
+             INNER JOIN usuario u ON u.id = s.id_usuario
+             WHERE s.id = $id_subasta;";
+
+    $result = $this->enlace->ExecuteSQL($vSql);
+
+    return (is_array($result) && count($result) > 0) ? $result[0] : null;
+}
+
+// ─────────────────────────────────────────────
+// DETALLE COMPLETO para la pantalla de subasta
+// Verifica cierre, agrega vendedor, historial y puja máxima
+// ─────────────────────────────────────────────
+public function getDetalleActiva($id)
+{
+    $seCerro = $this->verificarCierre($id);
+
+    $detalle = $this->get($id);
+    if ($detalle === null) return null;
+
+    $vendedor = $this->getVendedor($id);
+    $detalle->id_vendedor     = $vendedor ? $vendedor->id   : null;
+    $detalle->nombre_vendedor = $vendedor ? $vendedor->nombre : null;
+
+    $detalle->historial    = $this->getHistorialPujas($id) ?: [];
+    $detalle->puja_maxima  = $this->getPujaMaxima($id);
+    $detalle->recien_cerrada = $seCerro;
+
+    return $detalle;
+}
+
+
+
+    
 
 }

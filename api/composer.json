@@ -1,6 +1,7 @@
 {
     "require": {
         "psr/log": "^3.0",
-        "firebase/php-jwt": "^6.11"
+        "firebase/php-jwt": "^6.11",
+        "ably/ably-php": "^1.1"
     }
 }
