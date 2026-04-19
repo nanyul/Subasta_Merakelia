@@ -281,8 +281,8 @@ class SubastaModel
                     s.id_estado_subasta,
                     s.fecha_inicio,
                     s.fecha_fin AS fecha_cierre
-                 FROM subasta s
-                 WHERE s.id_cuadro = $id_cuadro;";
+                FROM subasta s
+                WHERE s.id_cuadro = $id_cuadro;";
 
         $vResultado = $this->enlace->ExecuteSQL($vSql);
 
