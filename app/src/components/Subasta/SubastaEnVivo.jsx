@@ -18,16 +18,27 @@ import fondoTabla from "@/assets/fondoTabla.png";
 import SubastaService from "@/services/SubastaService";
 import UserService from "@/services/UserService";
 
+function parseFechaLocal(value) {
+    if (!value) return null;
+
+    const normalizada = String(value).trim().replace(" ", "T");
+    const fecha = new Date(normalizada);
+
+    return Number.isNaN(fecha.getTime()) ? null : fecha;
+}
+
 function subastaEstaActiva(data) {
     if (!data) return false;
+    const inicio = parseFechaLocal(data.fecha_inicio);
+    const fin    = parseFechaLocal(data.fecha_fin);
+    const ahora  = new Date();
+
+    if (inicio && fin) return ahora >= inicio && ahora <= fin;
+
     const estadoId    = Number(data.id_estado_subasta ?? data.id_estado ?? data.idEstadoSubasta);
     const estadoTexto = String(data.estado ?? "").trim().toLowerCase();
     if (estadoId === 1) return true;
     if (estadoTexto.includes("activa") || estadoTexto.includes("en vivo")) return true;
-    const inicio = data.fecha_inicio ? new Date(data.fecha_inicio) : null;
-    const fin    = data.fecha_fin    ? new Date(data.fecha_fin)    : null;
-    const ahora  = new Date();
-    if (inicio && fin && !isNaN(inicio) && !isNaN(fin)) return ahora >= inicio && ahora <= fin;
     return false;
 }
 
@@ -57,7 +68,7 @@ function extraerMensajeError(err) {
 
     // Intentar parsear si Chrome entregó el body como string
     if (typeof data === "string") {
-        try { data = JSON.parse(data); } catch (_) { /* no era JSON válido */ }
+        try { data = JSON.parse(data); } catch { /* no era JSON válido */ }
     }
 
     if (data && typeof data === "object") {
@@ -167,7 +178,7 @@ export function SubastaEnVivo() {
                 : [];
             setHistorial(historialOrdenado);
             setPujaMaxima(data.puja_maxima ?? null);
-            setSubastaCerrada(!subastaEstaActiva(data));
+            setSubastaCerrada(false);
         } catch (err) {
             setError(err.message ?? "Error de conexión.");
         } finally {
@@ -302,6 +313,7 @@ export function SubastaEnVivo() {
     };
 
     const esActiva   = subasta ? subastaEstaActiva(subasta) && !subastaCerrada : false;
+    const esProgramada = !!subasta && !esActiva && String(subasta.estado ?? "").trim().toLowerCase() === "activa";
     const esVendedor = !!compradorSeleccionado && Number(compradorSeleccionado.id) === Number(subasta?.id_vendedor);
     const puedePujar = esActiva && !esVendedor && !!compradorSeleccionado;
 
@@ -341,8 +353,8 @@ export function SubastaEnVivo() {
                             {subasta.objeto}
                         </h1>
                         <div className="flex flex-wrap items-center gap-2 mt-2">
-                            <Badge className={`border ${esActiva ? "border-green-500 bg-green-900/60" : "border-red-500 bg-red-900/60"} px-3 py-1 text-sm`}>
-                                {esActiva ? "EN VIVO" : subasta.estado || "FINALIZADA"}
+                            <Badge className={`border ${esActiva ? "border-green-500 bg-green-900/60" : esProgramada ? "border-[#ECB44D] bg-[#ECB44D]/20" : "border-red-500 bg-red-900/60"} px-3 py-1 text-sm`}>
+                                {esActiva ? "EN VIVO" : esProgramada ? "PROGRAMADA" : subasta.estado || "FINALIZADA"}
                             </Badge>
                             {esVendedor && (
                                 <Badge className="border border-[#6FB8E6] bg-[#194174]/80 px-3 py-1 text-sm text-[#6FB8E6]">Eres el vendedor</Badge>
@@ -456,7 +468,9 @@ export function SubastaEnVivo() {
 
                                 {!esActiva && (
                                     <div className="rounded-md border border-red-500/40 bg-red-900/20 p-2 text-xs text-red-200">
-                                        Esta subasta no está activa, no se pueden registrar pujas.
+                                        {esProgramada
+                                            ? "La subasta todavía no inició. Esperá a la hora programada para pujar."
+                                            : "Esta subasta no está activa, no se pueden registrar pujas."}
                                     </div>
                                 )}
                                 {esVendedor && esActiva && (

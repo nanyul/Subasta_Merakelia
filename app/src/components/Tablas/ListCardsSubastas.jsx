@@ -13,6 +13,26 @@ ListCardsSubastas.propTypes = {
 export function ListCardsSubastas({ data }) {
     const BASE_URL = import.meta.env.VITE_BASE_URL + "uploads";
 
+    const parseFechaLocal = (value) => {
+        if (!value) return null;
+
+        const normalizada = String(value).trim().replace(" ", "T");
+        const fecha = new Date(normalizada);
+
+        return Number.isNaN(fecha.getTime()) ? null : fecha;
+    };
+
+    const puedeIngresarEnVivo = (item) => {
+        const inicio = parseFechaLocal(item?.fecha_inicio);
+        const fin = parseFechaLocal(item?.fecha_fin);
+        const ahora = new Date();
+
+        if (inicio && fin) return ahora >= inicio && ahora <= fin;
+
+        const estadoTexto = String(item?.estado ?? "").trim().toLowerCase();
+        return estadoTexto.includes("activa") || estadoTexto.includes("en vivo");
+    };
+
     const formatPrice = (price) => {
         return `$ ${Number(price).toFixed(2)}`;
     };
@@ -30,10 +50,14 @@ export function ListCardsSubastas({ data }) {
 
     return (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {data && data.map((item) => (
+            {data && data.map((item) => {
+                const puedeIngresar = puedeIngresarEnVivo(item);
+                const estaProgramada = !puedeIngresar && String(item.estado ?? "").trim().toLowerCase() === "activa";
+
+                return (
                 <Card
                     key={item.id}
-                    className={`group flex h-full flex-col overflow-hidden border-[#ECB44D]/50 shadow-[0_18px_54px_rgba(12,18,46,0.34)] backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_72px_rgba(12,18,46,0.42)] ${item.estado === "Activa" ? "ring-1 ring-[#ECB44D]/40" : ""
+                    className={`group flex h-full flex-col overflow-hidden border-[#ECB44D]/50 shadow-[0_18px_54px_rgba(12,18,46,0.34)] backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_72px_rgba(12,18,46,0.42)] ${puedeIngresar ? "ring-1 ring-[#ECB44D]/40" : ""
                         }`}
                     style={{
                         background: "linear-gradient(180deg, rgba(33,52,101,0.94) 0%, rgba(23,23,65,0.95) 52%, rgba(19,22,78,0.96) 100%)",
@@ -69,12 +93,12 @@ export function ListCardsSubastas({ data }) {
                                 <Badge
                                     className="absolute right-2.5 top-2.5 border border-[#ECB44D]/70 bg-[#ECB44D] px-2.5 py-1 text-[0.68rem] font-bold text-[#171741] shadow-[0_0_16px_rgba(236,180,77,0.24)] md:text-xs"
                                 >
-                                    {item.estado}
+                                    {estaProgramada ? "PROGRAMADA" : item.estado}
                                 </Badge>
                             )}
 
                             {/* Indicador EN VIVO para subastas activas */}
-                            {item.estado === "Activa" && (
+                            {puedeIngresar && (
                                 <Badge
                                     className="absolute left-2.5 top-2.5 border border-green-500 bg-green-600/90 px-2 py-0.5 text-[0.6rem] font-bold text-white animate-pulse"
                                 >
@@ -142,8 +166,8 @@ export function ListCardsSubastas({ data }) {
                                 <TooltipContent>Ver detalle de la subasta</TooltipContent>
                             </Tooltip>
 
-                            {/* Botón Participar en Vivo - SOLO para subastas activas */}
-                            {item.estado === "Activa" && (
+                            {/* Botón Participar en Vivo - SOLO cuando ya inició */}
+                            {puedeIngresar && (
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button
@@ -162,7 +186,8 @@ export function ListCardsSubastas({ data }) {
                         </TooltipProvider>
                     </div>
                 </Card>
-            ))}
+                );
+            })}
         </div>
     );
 }
