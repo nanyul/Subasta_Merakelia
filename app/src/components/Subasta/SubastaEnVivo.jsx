@@ -50,14 +50,25 @@ function extractArray(response) {
 }
 
 // ── Extrae un mensaje de error legible desde cualquier estructura ──
+// Chrome puede entregar err.response.data como string si el servidor
+// no responde con Content-Type: application/json en los errores 4xx.
 function extraerMensajeError(err) {
-    // Error de validación del servidor (HTTP 4xx con body JSON)
-    const data = err?.response?.data;
-    if (data) {
+    let data = err?.response?.data;
+
+    // Intentar parsear si Chrome entregó el body como string
+    if (typeof data === "string") {
+        try { data = JSON.parse(data); } catch (_) { /* no era JSON válido */ }
+    }
+
+    if (data && typeof data === "object") {
         if (typeof data.mensaje === "string" && data.mensaje) return data.mensaje;
-        if (typeof data.error === "string"   && data.error)   return data.error;
+        if (typeof data.error   === "string" && data.error)   return data.error;
         if (typeof data.message === "string" && data.message) return data.message;
     }
+
+    // String directo (ya parseado o no parseable como objeto)
+    if (typeof data === "string" && data) return data;
+
     // Error de red u otro
     if (typeof err?.message === "string" && err.message) return err.message;
     return "Error desconocido al registrar la puja.";
@@ -70,8 +81,8 @@ function extraerMensajeError(err) {
 function Toaster({ notificacion }) {
     if (!notificacion) return null;
     return createPortal(
-        <div className="fixed top-24 right-4 z-[9999] animate-in slide-in-from-right-5">
-            <Alert className={`flex items-center gap-2 border px-4 py-3 shadow-lg ${
+        <div className="fixed inset-0 z-9999 flex items-center justify-center pointer-events-none px-4">
+            <Alert className={`pointer-events-auto flex max-w-xl items-center gap-2 border px-4 py-3 shadow-lg animate-in zoom-in-95 ${
                 notificacion.tipo === "success" ? "border-green-500/50 bg-green-900/80" :
                 notificacion.tipo === "error"   ? "border-red-500/50 bg-red-900/80"     :
                 notificacion.tipo === "warning" ? "border-[#ECB44D]/50 bg-[#171741]/80" :
@@ -109,7 +120,10 @@ export function SubastaEnVivo() {
     const [notificacion, setNotificacion] = useState(null);
     const [tiempoRestante, setTiempoRestante] = useState(null);
 
-    const timeoutRef = useRef(null);
+    const timeoutRef           = useRef(null);
+    // Ref para acceder al comprador actual dentro de handleNuevaPuja
+    // sin que el callback se re-cree y re-suscriba a Ably en cada render
+    const compradorRef          = useRef(null);
 
     const formatPrice = (v) => `$ ${Number(v).toFixed(2)}`;
     const formatDate  = (d) => new Date(d).toLocaleString("es-CR", {
@@ -135,6 +149,12 @@ export function SubastaEnVivo() {
         [compradoresDisponibles, selectedBuyerId]
     );
 
+    // Mantener la ref sincronizada para que handleNuevaPuja siempre
+    // vea el comprador actual sin necesitar estar en sus dependencias
+    useEffect(() => {
+        compradorRef.current = compradorSeleccionado;
+    }, [compradorSeleccionado]);
+
     const cargarSubasta = useCallback(async (mostrarLoader = false) => {
         if (mostrarLoader) setLoading(true);
         try {
@@ -142,7 +162,10 @@ export function SubastaEnVivo() {
             const data = res.data?.data ?? res.data;
             if (!data || data.error) { setError(data?.mensaje ?? "Error al cargar la subasta."); return; }
             setSubasta(data);
-            setHistorial(Array.isArray(data.historial) ? data.historial : []);
+            const historialOrdenado = Array.isArray(data.historial)
+                ? [...data.historial].sort((a, b) => Number(b.monto) - Number(a.monto))
+                : [];
+            setHistorial(historialOrdenado);
             setPujaMaxima(data.puja_maxima ?? null);
             setSubastaCerrada(!subastaEstaActiva(data));
         } catch (err) {
@@ -209,14 +232,32 @@ export function SubastaEnVivo() {
         if (!data) return;
 
         if (Array.isArray(data.historial)) {
-            // El backend ya devuelve el historial ordenado por monto DESC
-            setHistorial(data.historial);
+            const ordenado = [...data.historial].sort((a, b) => Number(b.monto) - Number(a.monto));
+            setHistorial(ordenado);
         }
 
         if (data.puja_maxima !== undefined) {
             setPujaMaxima(data.puja_maxima);
+
+            // Notificar al usuario si alguien superó su puja
+            // Usamos compradorRef.current para leer el valor actual
+            // sin que este callback se re-cree y desconecte Ably
+            const comprador = compradorRef.current;
+            const ganador   = data.puja_maxima;
+            if (
+                comprador &&
+                ganador &&
+                String(ganador.id_usuario ?? ganador.id) !== String(comprador.id)
+            ) {
+                mostrarNotificacion(
+                    `¡${ganador.nombre_usuario ?? "Alguien"} superó la puja con ${
+                        "$ " + Number(ganador.monto).toFixed(2)
+                    }!`,
+                    "warning"
+                );
+            }
         }
-    }, []);
+    }, [mostrarNotificacion]);
 
     const handleSubastaCerrada = useCallback((data) => {
         setSubastaCerrada(true);
