@@ -656,8 +656,47 @@ public function getDetalleActiva($id)
     return $detalle;
 }
 
-
-
+// GUARDAR RESULTADO DE SUBASTA
+public function guardarResultadoSubasta($id_subasta)
+{
+    $pujaGanadora = $this->getPujaMaxima($id_subasta);
     
+    if (!$pujaGanadora) {
+        return null; 
+    }
+
+    $sql = "INSERT INTO resultado_subasta (id_puja_ganadora, precio_final)
+            VALUES ($pujaGanadora->id, $pujaGanadora->monto);";
+    
+    $idResultado = $this->enlace->executeSQL_DML_last($sql);
+    
+    return $idResultado;
+}
+
+// GUARDAR PAGO
+public function guardarPago($id_subasta)
+{
+    $sql = "INSERT INTO pago (id_subasta, esta_confirmado)
+            VALUES ($id_subasta, 0);";
+    
+    $idPago = $this->enlace->executeSQL_DML_last($sql);
+    
+    return $idPago;
+}
+
+// CONFIRMAR PAGO
+public function confirmarPago($id_subasta)
+{
+    $sql = "UPDATE pago 
+            SET esta_confirmado = 1, fecha_confirmacion = NOW()
+            WHERE id_subasta = $id_subasta;";
+    
+    $this->enlace->executeSQL_DML($sql);
+    
+    // Cambiar estado de subasta a Cancelada
+    $this->cancel($id_subasta);
+    
+    return true;
+}
 
 }

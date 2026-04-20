@@ -98,6 +98,38 @@ class Subasta
         }
     }
 
+    // POST /Subasta/confirmarPago
+    // Confirma el pago de una subasta (marca como pagada y cambia estado a Cancelada)
+    public function confirmarPago()
+    {
+        try {
+            $request  = new Request();
+            $response = new Response();
+            $input    = $request->getJSON();
+
+            if (!isset($input->id_subasta)) {
+                http_response_code(400);
+                $response->toJSON(['error' => true, 'mensaje' => 'Falta id_subasta.']);
+                return;
+            }
+
+            $id_subasta = intval($input->id_subasta);
+            $subastaM = new SubastaModel();
+
+            $subastaM->confirmarPago($id_subasta);
+
+            http_response_code(200);
+            $response->toJSON([
+                'success' => true, 
+                'mensaje' => 'Pago confirmado correctamente.',
+                'id_subasta' => $id_subasta
+            ]);
+
+        } catch (Exception $e) {
+            (new Response())->toJSON(null);
+            handleException($e);
+        }
+    }
 
     // Devuelve el listado de subastas programadas (estado: borrador)
     public function programadas()

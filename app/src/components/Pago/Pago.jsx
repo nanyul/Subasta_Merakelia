@@ -147,13 +147,13 @@ export function Pago() {
             // Simular delay de procesamiento
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
-            // Cancelar la subasta (cambiar estado a 3 = Cancelada)
+            // Confirmar pago en la base de datos
             if (subastaId) {
                 try {
-                    await SubastaService.cancelSubasta(subastaId);
-                } catch (cancelError) {
-                    console.error("Error al cancelar subasta:", cancelError);
-                    // No bloqueamos el flujo si falla la cancelación
+                    await SubastaService.confirmarPago(subastaId);
+                } catch (confirmError) {
+                    console.error("Error al confirmar pago:", confirmError);
+                    // No bloqueamos el flujo si falla la confirmación
                 }
             }
 

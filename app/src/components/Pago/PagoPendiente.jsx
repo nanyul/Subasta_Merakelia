@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, DollarSign, Clock, AlertCircle, ChevronRight } from "lucide-react";
+import { ArrowLeft, DollarSign, Clock, AlertCircle, ChevronRight, User } from "lucide-react";
 import fondoTabla from "@/assets/fondoTabla.png";
 import PropTypes from "prop-types";
 import SubastaService from "@/services/SubastaService";
@@ -198,6 +198,14 @@ export function PagoPendiente() {
                                                 <span className="text-[#ECB44D]">Monto:</span>
                                                 <span className="text-[#F2E199] font-semibold">
                                                     {formatPrice(monto)}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <User className="h-4 w-4 text-[#ECB44D]" />
+                                                <span className="text-[#ECB44D]">Ganador:</span>
+                                                <span className="text-[#F2E199] font-semibold">
+                                                    {subasta.puja_maxima?.nombre_usuario || "No especificado"}
                                                 </span>
                                             </div>
 

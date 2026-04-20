@@ -118,6 +118,8 @@ class Puja
 
             if ($ganador) {
                 $subastaM->cambiarAPendientePago($id_subasta);
+                $subastaM->guardarResultadoSubasta($id_subasta);
+                $subastaM->guardarPago($id_subasta);
             }
 
             $response->toJSON([
