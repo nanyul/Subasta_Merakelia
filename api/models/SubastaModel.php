@@ -307,12 +307,11 @@ class SubastaModel
     }
 
 
-    // ─────────────────────────────────────────────
+
     // CREAR SUBASTA
     // Validaciones directas en SQL (evita dependencia circular con CuadrosModel)
     // Estado inicial: 4 = Programada (borrador)
     // id_usuario viene del front como variable lógica simulada
-    // ─────────────────────────────────────────────
     public function create($objeto)
     {
         // Validar que el cuadro exista y esté activo
@@ -496,10 +495,9 @@ class SubastaModel
     }
 
 
-// ─────────────────────────────────────────────
+
 // VERIFICAR SI DEBERÍA ESTAR CERRADA (solo consulta, no modifica)
-// Retorna true/false sin cambiar base de datos
-// ─────────────────────────────────────────────
+// Retorna true/false sin cambiar la base de datos
 public function deberiaCerrarse($id_subasta)
 {
     $sqlCheck = "SELECT id, id_estado_subasta, fecha_fin
@@ -525,11 +523,10 @@ public function deberiaCerrarse($id_subasta)
     }
 }
 
-// ─────────────────────────────────────────────
+
 // ACTIVAR SUBASTAS PROGRAMADAS
 // Cambiar estado Programada(4) → Activa(1) cuando llegue fecha_inicio
 // Usa NOW() de SQL para mayor compatibilidad
-// ─────────────────────────────────────────────
 public function activarTodasLasListas()
 {
     try {
@@ -618,11 +615,10 @@ public function cambiarAPendientePago($idSubasta)
     }
 }
 
-// ─────────────────────────────────────────────
+
 // CERRAR TODAS LAS SUBASTAS VENCIDAS
 // Actualiza estado de todas las subastas que vencieron (1 → 2)
 // Usa NOW() de SQL para mayor compatibilidad
-// ─────────────────────────────────────────────
 public function cerrarTodasLasVencidas()
 {
     try {
@@ -641,11 +637,10 @@ public function cerrarTodasLasVencidas()
     }
 }
 
-// ─────────────────────────────────────────────
+
 // CIERRE AUTOMÁTICO - MODIFICA LA BD
 // Solo llamar explícitamente cuando sea necesario (cron, webhook, etc)
 // NO llamar en métodos GET
-// ─────────────────────────────────────────────
 public function cerrarSiVencio($id_subasta)
 {
     if (!$this->deberiaCerrarse($id_subasta)) {
@@ -659,21 +654,19 @@ public function cerrarSiVencio($id_subasta)
     return true;
 }
 
-// ─────────────────────────────────────────────
+
 // CIERRE AUTOMÁTICO (DEPRECATED - Para compatibilidad)
 // Cambia estado Activa(1) → Finalizada(2) si venció fecha_fin
 // Retorna true si se acaba de cerrar
 // ⚠️ NO USAR EN GET REQUESTS - USAR cerrarSiVencio() explícitamente
-// ─────────────────────────────────────────────
 public function verificarCierre($id_subasta)
 {
     // Solo verifica, no modifica
     return $this->deberiaCerrarse($id_subasta);
 }
 
-// ─────────────────────────────────────────────
+
 // PUJA MÁS ALTA de una subasta
-// ─────────────────────────────────────────────
 public function getPujaMaxima($id_subasta)
 {
     $vSql = "SELECT p.id, p.monto, p.id_usuario, u.nombre AS nombre_usuario
@@ -688,9 +681,8 @@ public function getPujaMaxima($id_subasta)
     return (is_array($result) && count($result) > 0) ? $result[0] : null;
 }
 
-// ─────────────────────────────────────────────
+
 // VENDEDOR de una subasta
-// ─────────────────────────────────────────────
 public function getVendedor($id_subasta)
 {
     $vSql = "SELECT u.id, u.nombre
@@ -703,10 +695,9 @@ public function getVendedor($id_subasta)
     return (is_array($result) && count($result) > 0) ? $result[0] : null;
 }
 
-// ─────────────────────────────────────────────
+
 // DETALLE COMPLETO para la pantalla de subasta
 // ⚠️ NO MODIFICA EL ESTADO - Solo consulta y retorna datos
-// ─────────────────────────────────────────────
 public function getDetalleActiva($id)
 {
     // ⚠️ IMPORTANTE: NO llamar a verificarCierre() aquí
