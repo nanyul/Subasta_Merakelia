@@ -13,12 +13,20 @@ class SubastaService {
         return axios.get(BASE_URL + "/activas");
     }
 
+    getSubastasActivasYProgramadas() {
+        return axios.get(BASE_URL + "/activasYProgramadas");
+    }
+
     getSubastasFinalizadas() {
         return axios.get(BASE_URL + "/finalizadas");
     }
 
     getProgramadas() {
         return axios.get(BASE_URL + "/programadas");
+    }
+
+    getSubastasPendientesPago() {
+        return axios.get(BASE_URL + "/pendientesPago");
     }
 
     getSubastaById(id) {
@@ -49,12 +57,24 @@ class SubastaService {
         return axios.post(BASE_URL + "/cancel", JSON.stringify({ id }));
     }
 
+    cambiarAPendientePago(id_subasta) {
+        return axios.post(BASE_URL + "/cambiarAPendientePago", JSON.stringify({ id_subasta }));
+    }
+
     getDetalleSubasta(id) {
         return axios.get(`${PUJA_URL}/detalle/${id}`);
     }
 
     registrarPuja(monto, id_usuario, id_subasta) {
         return axios.post(`${PUJA_URL}/registrar`, { monto, id_usuario, id_subasta });
+    }
+
+    finalizarSubasta(id_subasta) {
+        return axios.post(`${PUJA_URL}/finalizar`, { id_subasta });
+    }
+
+    cambiarAPendientePago(id_subasta) {
+        return axios.post(BASE_URL + "/cambiarAPendientePago", { id_subasta });
     }
 
 }

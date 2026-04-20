@@ -13,6 +13,13 @@ class Subasta
         try {
             $response = new Response();
             $subasta  = new SubastaModel();
+            
+            // ⚠️ Activar subastas que ya llegó su hora de inicio
+            $subasta->activarTodasLasListas();
+            
+            // ⚠️ Limpiar subastas vencidas
+            $subasta->cerrarTodasLasVencidas();
+            
             $result   = $subasta->all();
             $response->toJSON($result);
         } catch (Exception $e) {
@@ -27,7 +34,40 @@ class Subasta
         try {
             $response = new Response();
             $subasta  = new SubastaModel();
+            
+            // ⚠️ Activar subastas que ya llegó su hora de inicio
+            $subasta->activarTodasLasListas();
+            
+            // ⚠️ Limpiar subastas vencidas ANTES de retornar (de forma segura)
+            $subasta->cerrarTodasLasVencidas();
+            
             $result   = $subasta->getActivas();
+            $response->toJSON($result);
+        } catch (Exception $e) {
+            $response->toJSON(null);
+            handleException($e);
+        }
+    }
+
+    // Devuelve subastas programadas y activas (para tabla principal)
+    public function activasYProgramadas()
+    {
+        try {
+            $response = new Response();
+            $subasta  = new SubastaModel();
+            
+            // ⚠️ Activar subastas que ya llegó su hora de inicio
+            $subasta->activarTodasLasListas();
+            
+            // ⚠️ Limpiar subastas vencidas ANTES de retornar
+            $subasta->cerrarTodasLasVencidas();
+            
+            $programadas = $subasta->getProgramadas();
+            $activas     = $subasta->getActivas();
+            
+            // Combinar: programadas primero, luego activas
+            $result = array_merge($programadas, $activas);
+            
             $response->toJSON($result);
         } catch (Exception $e) {
             $response->toJSON(null);
@@ -43,6 +83,23 @@ class Subasta
             $response = new Response();
             $subasta  = new SubastaModel();
             $result   = $subasta->getFinalizadas();
+            $response->toJSON($result);
+        } catch (Exception $e) {
+            $response->toJSON(null);
+            handleException($e);
+        }
+    }
+
+
+    // GET /Subasta/pendientesPago
+    // Devuelve subastas con estado 5 (pago pendiente)
+    public function pendientesPago()
+    {
+        try {
+            $response = new Response();
+            $subasta  = new SubastaModel();
+            $result   = $subasta->getPendientesPago();
+
             $response->toJSON($result);
         } catch (Exception $e) {
             $response->toJSON(null);
@@ -207,6 +264,30 @@ class Subasta
             $this->isModelError($result)
                 ? $response->toJSON(['success' => false, 'message' => $result['error']])
                 : $response->toJSON(['success' => true,  'message' => 'Subasta cancelada correctamente.', 'data' => $result]);
+        } catch (Exception $e) {
+            $response->toJSON(null);
+            handleException($e);
+        }
+    }
+
+    // POST: Cambiar subasta a estado PENDIENTE PAGO (5)
+    // Se basa en que la subasta fue finalizada y tiene ganador
+    public function cambiarAPendientePago()
+    {
+        try {
+            $request   = new Request();
+            $response  = new Response();
+            $inputJSON = $request->getJSON();
+
+            if (!isset($inputJSON->id_subasta)) {
+                $response->toJSON(['success' => false, 'message' => 'ID de subasta es requerido']);
+                return;
+            }
+
+            $subasta = new SubastaModel();
+            $subasta->cambiarAPendientePago($inputJSON->id_subasta);
+
+            $response->toJSON(['success' => true, 'message' => 'Subasta movida a estado pendiente pago.']);
         } catch (Exception $e) {
             $response->toJSON(null);
             handleException($e);

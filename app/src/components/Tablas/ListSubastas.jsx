@@ -14,7 +14,7 @@ export function ListSubastas() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await SubastaService.getSubastasActivas();
+                const response = await SubastaService.getSubastasActivasYProgramadas();
                 console.log(response.data);
                 setData(response.data);
                 if (!response.data.success) {
@@ -32,7 +32,7 @@ export function ListSubastas() {
     if (loading) return <LoadingGrid type="grid" />;
     if (error) return <ErrorAlert title="Error al cargar subastas" message={error} />;
     if (!data || !data.data || data.data.length === 0)
-        return <EmptyState message="No se encontraron subastas activas." />;
+        return <EmptyState message="No se encontraron subastas disponibles." />;
 
     return (
         <div

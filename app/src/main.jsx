@@ -19,6 +19,8 @@ import { UpdateSubasta } from './components/Tablas/Form/UpdateSubasta'
 import { CreateSubasta } from './components/Tablas/Form/CreateSubasta'
 import { ListSubastas } from './components/Tablas/ListSubastas'
 import { SubastaEnVivo } from './components/Subasta/SubastaEnVivo'
+import { Pago } from './components/Pago/Pago'
+import { PagoPendiente } from './components/Pago/PagoPendiente'
 import { CreateUser } from './components/Tablas/Form/CreateUser'
 import { UpdateUser } from './components/Tablas/Form/UpdateUser'
 import { CreateCuadros } from './components/Tablas/Form/CreateCuadros'
@@ -53,6 +55,8 @@ const rutas = createBrowserRouter([
       {path:"subasta/edit/:id", element: <UpdateSubasta />},
       {path:"subasta/create", element: <CreateSubasta />},
       {path:"subasta/en-vivo/:id", element: <SubastaEnVivo />},
+      {path:"pago-pendiente", element: <PagoPendiente />},
+      {path:"pago", element: <Pago />},
     ]
   }
 ])

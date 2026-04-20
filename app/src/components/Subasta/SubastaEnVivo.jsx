@@ -12,7 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CustomSelect } from "@/components/ui/custom/custom-select";
+import { LoadingGrid } from "@/components/ui/custom/LoadingGrid";
+import { ErrorAlert } from "@/components/ui/custom/ErrorAlert";
+import { EmptyState } from "@/components/ui/custom/EmptyState";
 import { ArrowLeft, Gavel, User, DollarSign, Clock, TrendingUp, Trophy, Medal, Crown, AlertCircle, CheckCircle, XCircle, RefreshCw, Zap, CalendarDays, ImageIcon, Package, ScrollText } from "lucide-react";
 import fondoTabla from "@/assets/fondoTabla.png";
 import SubastaService from "@/services/SubastaService";
@@ -89,27 +91,68 @@ function extraerMensajeError(err) {
 // Usar createPortal evita el error "insertBefore: node is not a child"
 // que ocurre cuando React intenta insertar/remover nodos con renderizado
 // condicional {cond && <div>} dentro de árboles con animaciones CSS.
-function Toaster({ notificacion }) {
+function Toaster({ notificacion, onClose }) {
     if (!notificacion) return null;
+    const tieneAcciones = notificacion.acciones && notificacion.acciones.length > 0;
     return createPortal(
         <div className="fixed inset-0 z-9999 flex items-center justify-center pointer-events-none px-4">
-            <Alert className={`pointer-events-auto flex max-w-xl items-center gap-2 border px-4 py-3 shadow-lg animate-in zoom-in-95 ${
-                notificacion.tipo === "success" ? "border-green-500/50 bg-green-900/80" :
+            <Alert className={`pointer-events-auto flex flex-col max-w-xl gap-3 border px-4 py-3 shadow-lg animate-in zoom-in-95 ${
+                notificacion.tipo === "success" ? "border-[#171741]/50 bg-[#171741]/80" :
                 notificacion.tipo === "error"   ? "border-red-500/50 bg-red-900/80"     :
                 notificacion.tipo === "warning" ? "border-[#ECB44D]/50 bg-[#171741]/80" :
                                                   "border-[#6FB8E6]/50 bg-[#194174]/80"
             }`}>
-                {notificacion.tipo === "success" && <CheckCircle className="h-4 w-4 text-green-400" />}
-                {notificacion.tipo === "error"   && <XCircle     className="h-4 w-4 text-red-400"   />}
-                {notificacion.tipo === "warning" && <AlertCircle className="h-4 w-4 text-[#ECB44D]" />}
-                {notificacion.tipo === "info"    && <Zap         className="h-4 w-4 text-[#6FB8E6]" />}
-                <AlertDescription className="text-white">{notificacion.mensaje}</AlertDescription>
+                <div className="flex items-start gap-2">
+                    {notificacion.tipo === "success" && <CheckCircle className="h-4 w-4 text-[#ECB44D] shrink-0 mt-0.5" />}
+                    {notificacion.tipo === "error"   && <XCircle     className="h-4 w-4 text-red-400 shrink-0 mt-0.5"   />}
+                    {notificacion.tipo === "warning" && <AlertCircle className="h-4 w-4 text-[#ECB44D] shrink-0 mt-0.5" />}
+                    {notificacion.tipo === "info"    && <Zap         className="h-4 w-4 text-[#6FB8E6] shrink-0 mt-0.5" />}
+                    <AlertDescription className="text-white flex-1">{notificacion.mensaje}</AlertDescription>
+                </div>
+                <div className="flex gap-2 ml-6">
+                    {tieneAcciones && notificacion.acciones.map((accion, idx) => (
+                        <Button
+                            key={idx}
+                            onClick={() => {
+                                accion.onClick?.();
+                                onClose();
+                            }}
+                            className={accion.variant === "secondary" 
+                                ? "bg-[#194174]/60 border border-[#6FB8E6] text-[#6FB8E6] hover:bg-[#194174]"
+                                : "bg-[#ECB44D] text-[#171741] hover:bg-[#ECB44D]/80 font-semibold"
+                            }
+                            size="sm"
+                        >
+                            {accion.label}
+                        </Button>
+                    ))}
+                    {!tieneAcciones && (
+                        <Button
+                            onClick={onClose}
+                            className="bg-[#194174]/60 border border-[#6FB8E6] text-[#6FB8E6] hover:bg-[#194174]"
+                            size="sm"
+                        >
+                            Cancelar
+                        </Button>
+                    )}
+                </div>
             </Alert>
         </div>,
         document.body
     );
 }
-Toaster.propTypes = { notificacion: PropTypes.shape({ mensaje: PropTypes.string, tipo: PropTypes.string }) };
+Toaster.propTypes = { 
+    notificacion: PropTypes.shape({ 
+        mensaje: PropTypes.string, 
+        tipo: PropTypes.string,
+        acciones: PropTypes.arrayOf(PropTypes.shape({
+            label: PropTypes.string,
+            onClick: PropTypes.func,
+            variant: PropTypes.oneOf(["primary", "secondary"])
+        }))
+    }),
+    onClose: PropTypes.func
+};
 
 export function SubastaEnVivo() {
     const { id }   = useParams();
@@ -142,16 +185,33 @@ export function SubastaEnVivo() {
         hour: "2-digit", minute: "2-digit", hour12: false,
     });
 
-    const mostrarNotificacion = useCallback((mensaje, tipo = "info") => {
-        // FIX: Garantizamos que siempre sea string para evitar el error de React
-        const mensajeSeguro = typeof mensaje === "string" && mensaje
-            ? mensaje
-            : tipo === "error"
-                ? "Ocurrió un error inesperado."
-                : "Operación completada.";
-        setNotificacion({ mensaje: mensajeSeguro, tipo });
+    const mostrarNotificacion = useCallback((mensaje, tipo = "info", acciones = null) => {
+        // Manejar: mostrarNotificacion(string, tipo) O mostrarNotificacion({ mensaje, tipo, acciones })
+        let mensajeSeguro, tipoSeguro, accionesSeguro;
+        
+        if (typeof mensaje === "object" && mensaje !== null) {
+            // Si es un objeto, extraer propiedades
+            mensajeSeguro = mensaje.mensaje ?? "Operación completada.";
+            tipoSeguro = mensaje.tipo ?? "info";
+            accionesSeguro = mensaje.acciones ?? null;
+        } else {
+            // Si es string, usar los parámetros
+            mensajeSeguro = typeof mensaje === "string" && mensaje
+                ? mensaje
+                : tipo === "error"
+                    ? "Ocurrió un error inesperado."
+                    : "Operación completada.";
+            tipoSeguro = tipo;
+            accionesSeguro = acciones;
+        }
+        
+        setNotificacion({ mensaje: mensajeSeguro, tipo: tipoSeguro, acciones: accionesSeguro });
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        timeoutRef.current = setTimeout(() => setNotificacion(null), 5000);
+        // ✅ Remover cierre automático - usuario debe hacer clic en Cancelar
+    }, []);
+    
+    const cerrarNotificacion = useCallback(() => {
+        setNotificacion(null);
     }, []);
 
     const compradoresDisponibles = useMemo(() => compradores.filter(esUsuarioComprador), [compradores]);
@@ -193,11 +253,17 @@ export function SubastaEnVivo() {
             if (cancelled) return;
             const lista = extractArray(res);
             setCompradores(lista);
-            const primero = lista.find(esUsuarioComprador);
-            if (primero) setSelectedBuyerId(String(primero.id));
         }).catch(() => { if (!cancelled) setCompradores([]); });
         return () => { cancelled = true; };
     }, []);
+
+    // Seleccionar comprador aleatorio al cargar disponibles
+    useEffect(() => {
+        if (compradoresDisponibles.length > 0 && !selectedBuyerId) {
+            const indiceAleatorio = Math.floor(Math.random() * compradoresDisponibles.length);
+            setSelectedBuyerId(String(compradoresDisponibles[indiceAleatorio].id));
+        }
+    }, [compradoresDisponibles, selectedBuyerId]);
 
     // Carga inicial
     useEffect(() => { cargarSubasta(true); }, [id]); // eslint-disable-line
@@ -224,6 +290,33 @@ export function SubastaEnVivo() {
         const iv = setInterval(tick, 1000);
         return () => clearInterval(iv);
     }, [subasta?.fecha_fin, subastaCerrada]); // eslint-disable-line
+
+    // ── Finalizar subasta cuando vence (notificar al servidor)
+    useEffect(() => {
+        if (!tiempoRestante?.finalizada || subastaCerrada || !subasta?.id) return;
+
+        // Llamar al endpoint para cerrar en la BD
+        SubastaService.finalizarSubasta(subasta.id)
+            .then((response) => {
+                console.log('Respuesta finalizarSubasta:', response);
+                setSubastaCerrada(true);
+                setSubasta((prev) => prev ? { ...prev, estado: "Finalizada", id_estado_subasta: 2 } : prev);
+                
+                // ✅ Mostrar ganador inmediatamente con el dato retornado por el servidor
+                const ganadorData = response?.data?.ganador;
+                console.log('Ganador recibido:', ganadorData);
+                
+                if (ganadorData) {
+                    handleSubastaCerrada({ ganador: ganadorData });
+                } else {
+                    console.warn('No hay ganador (no hay pujas en la subasta)');
+                }
+            })
+            .catch((err) => {
+                // Log silencioso si falla, no afecta UX
+                console.error('Error al finalizar subasta:', err);
+            });
+    }, [tiempoRestante?.finalizada, subastaCerrada, subasta?.id]);
 
     const montoMinimo = useMemo(() => {
         const base = pujaMaxima ? Number(pujaMaxima.monto) : Number(subasta?.precio_base ?? 0);
@@ -270,12 +363,73 @@ export function SubastaEnVivo() {
         }
     }, [mostrarNotificacion]);
 
+    const handleRealizarPago = useCallback(() => {
+        navigate("/pago-pendiente", { state: { subastaId: id, ganador: pujaMaxima } });
+    }, [mostrarNotificacion, navigate, id, pujaMaxima]);
+
+    const handleNoPagarAun = useCallback(() => {
+        mostrarNotificacion("Puedes completar el pago cuando estés listo.", "info");
+        // TODO: Aquí iría la lógica para guardar que el usuario pospondrá el pago
+    }, [mostrarNotificacion]);
+
+    const seleccionarCompradorAleatorio = useCallback(() => {
+        if (compradoresDisponibles.length === 0) {
+            mostrarNotificacion("No hay compradores disponibles.", "error");
+            return;
+        }
+        const indiceAleatorio = Math.floor(Math.random() * compradoresDisponibles.length);
+        const compradorAleatorio = compradoresDisponibles[indiceAleatorio];
+        setSelectedBuyerId(String(compradorAleatorio.id));
+        mostrarNotificacion(`Comprador seleccionado: ${compradorAleatorio.nombre}`, "info");
+    }, [compradoresDisponibles, mostrarNotificacion]);
+
     const handleSubastaCerrada = useCallback((data) => {
         setSubastaCerrada(true);
         setSubasta((prev) => prev ? { ...prev, estado: "Finalizada", id_estado_subasta: 2 } : prev);
         if (data?.ganador) setPujaMaxima(data.ganador);
-        mostrarNotificacion("La subasta ha finalizado.", "info");
-    }, [mostrarNotificacion]);
+
+        const ganador = data?.ganador;
+        const comprador = compradorRef.current;
+        const esGanador = comprador && ganador && String(ganador.id_usuario ?? ganador.id) === String(comprador.id);
+
+        if (!ganador) {
+
+            // No hay ganador (la subasta no tuvo pujas)
+            mostrarNotificacion({
+                mensaje: "La subasta ha finalizado pero no hay ganador (sin pujas registradas).",
+                tipo: "info"
+            });
+        } else {
+            // Si hay ganador, cambiar estado a PENDIENTE PAGO (5)
+            SubastaService.cambiarAPendientePago(id)
+                .catch((err) => console.error('Error al cambiar a pendiente pago:', err));
+
+            if (esGanador) {
+                mostrarNotificacion({
+                    mensaje: "¡Felicidades has ganado la subasta! ¿Deseas realizar el pago?",
+                    tipo: "success",
+                    acciones: [
+                        {
+                            label: "Realizar Pago",
+                            onClick: handleRealizarPago,
+                            variant: "primary"
+                        },
+                        {
+                            label: "Cancelar",
+                            onClick: handleNoPagarAun,
+                            variant: "secondary"
+                        }
+                    ]
+                });
+            } else {
+                const nombreGanador = ganador?.nombre_usuario ?? "Desconocido";
+                mostrarNotificacion({
+                    mensaje: `Ha finalizado la subasta y el ganador es: ${nombreGanador}`,
+                    tipo: "info"
+                });
+            }
+        }
+    }, [mostrarNotificacion, handleRealizarPago, handleNoPagarAun]);
 
     useAblySubasta(id, handleNuevaPuja, handleSubastaCerrada);
 
@@ -293,6 +447,7 @@ export function SubastaEnVivo() {
         try {
             const res    = await SubastaService.registrarPuja(parseFloat(montoPuja), Number(compradorSeleccionado.id), parseInt(id));
             const result = res.data;
+            
 
             if (result?.success) {
                 // FIX: NO reseteamos montoPuja aquí — el useEffect de montoMinimo
@@ -331,8 +486,6 @@ export function SubastaEnVivo() {
         if (Number.isFinite(n) && n >= montoMinimo) setMontoPuja(v);
     };
 
-    const ranking = historial;
-
     if (loading)  return <LoadingGrid />;
     if (error)    return <ErrorAlert title="Error" message={error} />;
     if (!subasta) return <EmptyState message="No se encontró la subasta." />;
@@ -344,7 +497,7 @@ export function SubastaEnVivo() {
             <div className="hero-stars absolute inset-0 opacity-90" />
             <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 18% 18%, rgba(111,184,230,0.16) 0%, transparent 22%), radial-gradient(circle at 83% 16%, rgba(242,225,153,0.18) 0%, transparent 18%), radial-gradient(circle at 52% 72%, rgba(236,180,77,0.14) 0%, transparent 26%)" }} />
 
-        <Toaster notificacion={notificacion} />
+        <Toaster notificacion={notificacion} onClose={cerrarNotificacion} />
 
         <div className="relative z-10 mx-auto max-w-7xl pt-12 md:pt-14">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -452,17 +605,22 @@ export function SubastaEnVivo() {
                         <Card className="border-[#ECB44D]/50 bg-[#171741]/64 backdrop-blur-md">
                             <CardContent className="p-4 space-y-3">
                                 <div>
-                                    <div className="text-sm text-[#6FB8E6] mb-1">Usuario que realizará la puja</div>
-                                    <CustomSelect
-                                        field={{ value: selectedBuyerId, onChange: setSelectedBuyerId }}
-                                        data={compradoresDisponibles}
-                                        label="Usuario comprador"
-                                        getOptionLabel={(u) => `${u.nombre || "Sin nombre"}${u.correo ? ` - ${u.correo}` : ""}`}
-                                        getOptionValue={(u) => u.id}
-                                        error={!compradoresDisponibles.length ? "No hay compradores disponibles" : ""}
-                                    />
+                                    <div className="text-sm text-[#6FB8E6] mb-3">Comprador para pujar</div>
+                                    <Button 
+                                        onClick={seleccionarCompradorAleatorio}
+                                        className="w-full bg-[#6FB8E6] text-[#171741] hover:bg-[#6FB8E6]/80 font-semibold mb-3"
+                                    >
+                                        <RefreshCw className="h-4 w-4 mr-2" />
+                                        Seleccionar comprador aleatorio
+                                    </Button>
                                     {compradorSeleccionado && (
-                                        <p className="text-xs text-[#F2E199]/75 mt-1">Seleccionado: <span className="font-semibold text-[#ECB44D]">{compradorSeleccionado.nombre}</span></p>
+                                        <div className="rounded-lg border border-[#ECB44D]/50 bg-[#194174]/30 p-3">
+                                            <p className="text-xs text-[#6FB8E6] mb-1">Comprador seleccionado:</p>
+                                            <p className="text-sm font-semibold text-[#ECB44D]">{compradorSeleccionado.nombre}</p>
+                                            {compradorSeleccionado.correo && (
+                                                <p className="text-xs text-[#F2E199]/70 mt-1">{compradorSeleccionado.correo}</p>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
 
@@ -529,7 +687,7 @@ export function SubastaEnVivo() {
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {Array.isArray(ranking) && ranking.slice(0, 10).map((puja, idx) => {
+                                                {Array.isArray(historial) && historial.slice(0, 10).map((puja, idx) => {
                                                     const pos = idx + 1;
                                                     return (
                                                         <TableRow key={`${puja.id_puja ?? "temp"}-${idx}`} className={`border-0 ${pos === 1 ? "bg-[#ECB44D]/10" : "bg-[#1a1a5a]/94"} hover:bg-[#202068]/96`}>
@@ -574,14 +732,4 @@ export function SubastaEnVivo() {
     );
 }
 
-function LoadingGrid() {
-    return <div className="flex items-center justify-center min-h-screen bg-[#171741]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ECB44D]" /></div>;
-}
-function ErrorAlert({ title, message }) {
-    return <div className="flex items-center justify-center min-h-screen bg-[#171741]"><div className="text-center"><AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" /><h2 className="text-xl font-bold text-[#F2E199]">{title}</h2><p className="text-[#6FB8E6]">{message}</p></div></div>;
-}
-function EmptyState({ message }) {
-    return <div className="flex items-center justify-center min-h-screen bg-[#171741]"><div className="text-center"><Package className="h-12 w-12 text-[#6FB8E6] mx-auto mb-4 opacity-50" /><p className="text-[#F2E199]">{message}</p></div></div>;
-}
-ErrorAlert.propTypes = { title: PropTypes.string.isRequired, message: PropTypes.string.isRequired };
-EmptyState.propTypes = { message: PropTypes.string.isRequired };
+export default SubastaEnVivo;

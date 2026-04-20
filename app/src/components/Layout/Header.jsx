@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Layers,
   Film,
@@ -8,7 +8,7 @@ import {
   LogIn,
   UserPlus,
   LogOut,
-  ShoppingCart,
+  CreditCard,
   Menu,
   X,
   ChevronDown,
@@ -17,6 +17,7 @@ import {
   HandCoins,
   Palette,
 } from "lucide-react";
+import SubastaService from "@/services/SubastaService";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -32,8 +33,44 @@ import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 
 
 export default function Header() {
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [cantidadPendiente, setCantidadPendiente] = useState(0);
   const userEmail = "Invitado";
+
+  // Obtener cantidad de pagos pendientes desde la API
+  const cargarPendientes = useCallback(async () => {
+    try {
+      const res = await SubastaService.getSubastasPendientesPago();
+      
+      if (res.data?.data && Array.isArray(res.data.data)) {
+        setCantidadPendiente(res.data.data.length);
+      } else {
+        setCantidadPendiente(0);
+      }
+    } catch (error) {
+      console.error("Error al cargar pagos pendientes:", error);
+      setCantidadPendiente(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    cargarPendientes();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("pagoPendienteChanged", cargarPendientes);
+    
+    return () => {
+      window.removeEventListener("pagoPendienteChanged", cargarPendientes);
+    };
+  }, [cargarPendientes]);
+
+  const handleClickBillete = () => {
+    if (cantidadPendiente > 0) {
+      navigate("/pago-pendiente");
+    }
+  };
 
   const subasItems = [
     { title: "Subastas", href: "/subasta/activas", icon: <Film className="h-4 w-4" /> },
@@ -193,17 +230,18 @@ export default function Header() {
           </Menubar>
         </div>
 
-        {/* -------- Carrito + Menú móvil -------- */}
+        {/* -------- Billete + Menú móvil -------- */}
         <div className="flex items-center gap-4">
-          <Link to="/cart" className="relative hover:opacity-80">
-            <ShoppingCart className="h-6 w-6" />
-            <Badge
-              className="absolute -top-2 -right-3 rounded-full px-2 py-0 text-xs font-semibold"
-              variant="secondary"
-            >
-              3
-            </Badge>
-          </Link>
+          <button onClick={handleClickBillete} className="relative hover:opacity-80 cursor-pointer">
+            <CreditCard className="h-6 w-6" style={{ color: '#ECB44D' }} />
+            {cantidadPendiente > 0 && (
+              <Badge
+                className="absolute -top-2 -right-3 rounded-full px-2 py-0 text-xs font-semibold bg-[#ECB44D] text-[#171741]"
+              >
+                {cantidadPendiente}
+              </Badge>
+            )}
+          </button>
 
           {/* Menú móvil */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>

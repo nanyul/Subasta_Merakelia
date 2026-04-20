@@ -81,11 +81,64 @@ class Puja
                 return;
             }
 
-            if ($result->recien_cerrada) {
-                $this->emitirCierre($param, $subastaM->getPujaMaxima($param));
+            // ⚠️ IMPORTANTE: NO modificamos el estado aquí
+            // Si $result->deberiaCerrarse es true, el cliente lo detectará por la fecha
+            // El cierre automático debe ocurrir por cron o endpoint POST explícito
+            
+            $response->toJSON($result);
+        } catch (Exception $e) {
+            (new Response())->toJSON(null);
+            handleException($e);
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // FINALIZAR SUBASTA (POST)
+    // El frontend llama cuando detecta que vencida
+    // POST /Puja/finalizar
+    // ─────────────────────────────────────────────
+    public function finalizar()
+    {
+        try {
+            $request  = new Request();
+            $response = new Response();
+            $input    = $request->getJSON();
+
+            if (!isset($input->id_subasta)) {
+                http_response_code(400);
+                $response->toJSON(['error' => true, 'mensaje' => 'Falta id_subasta.']);
+                return;
             }
 
-            $response->toJSON($result);
+            $id_subasta = intval($input->id_subasta);
+            $subastaM = new SubastaModel();
+
+            // Verificar que debería estar cerrada
+            if (!$subastaM->deberiaCerrarse($id_subasta)) {
+                http_response_code(422);
+                $response->toJSON(['error' => true, 'mensaje' => 'La subasta aun no vence o ya está cerrada.']);
+                return;
+            }
+
+            // Cerrar explícitamente
+            $subastaM->cerrarSiVencio($id_subasta);
+
+            // Obtener ganador y emitir evento Ably
+            $ganador = $subastaM->getPujaMaxima($id_subasta);
+            $this->emitirCierre($id_subasta, $ganador);
+
+            // Si hay ganador (al menos una puja), cambiar a estado PENDIENTE PAGO (5)
+            if ($ganador) {
+                $subastaM->cambiarAPendientePago($id_subasta);
+            }
+
+            // ✅ Retornar ganador en la respuesta para mostrar inmediatamente
+            $response->toJSON([
+                'success' => true, 
+                'mensaje' => 'Subasta finalizada correctamente.',
+                'ganador' => $ganador
+            ]);
+
         } catch (Exception $e) {
             (new Response())->toJSON(null);
             handleException($e);
