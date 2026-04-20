@@ -1,4 +1,3 @@
-// src/hooks/useAblySubasta.js
 import { useEffect, useRef } from 'react';
 import * as Ably from 'ably';
 
@@ -13,7 +12,7 @@ export function useAblySubasta(idSubasta, onNuevaPuja, onSubastaCerrada) {
   const onNuevaPujaRef      = useRef(onNuevaPuja);
   const onSubastaCerradaRef = useRef(onSubastaCerrada);
 
-  // Actualizamos las refs silenciosamente sin tocar el canal
+  // Se actualizan las refs silenciosamente sin tocar el canal
   useEffect(() => { onNuevaPujaRef.current      = onNuevaPuja;      }, [onNuevaPuja]);
   useEffect(() => { onSubastaCerradaRef.current = onSubastaCerrada; }, [onSubastaCerrada]);
 

@@ -442,6 +442,9 @@ export function SubastaEnVivo() {
             
 
             if (result?.success) {
+                // NO reseteamos montoPuja aquí — el useEffect de montoMinimo
+                // lo actualizará automáticamente cuando Ably traiga la nueva pujaMaxima.
+                // Así el campo siempre muestra el nuevo mínimo correcto en ambos navegadores.
                 mostrarNotificacion("¡Puja registrada exitosamente!", "success");
             } else {
                 // El servidor respondió 2xx pero con error lógico
@@ -449,6 +452,7 @@ export function SubastaEnVivo() {
                 mostrarNotificacion(typeof msg === "string" ? msg : "Error al registrar la puja.", "error");
             }
         } catch (err) {
+            //  función helper para extraer siempre un string válido
             mostrarNotificacion(extraerMensajeError(err), "error");
         } finally {
             setEnviando(false);
