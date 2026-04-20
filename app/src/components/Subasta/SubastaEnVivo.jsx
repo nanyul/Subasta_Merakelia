@@ -62,9 +62,7 @@ function extractArray(response) {
     return [];
 }
 
-// ── Extrae un mensaje de error legible desde cualquier estructura ──
-// Chrome puede entregar err.response.data como string si el servidor
-// no responde con Content-Type: application/json en los errores 4xx.
+
 function extraerMensajeError(err) {
     let data = err?.response?.data;
 
@@ -87,10 +85,6 @@ function extraerMensajeError(err) {
     return "Error desconocido al registrar la puja.";
 }
 
-// ── Notificación montada en document.body via Portal ──────────────────────────
-// Usar createPortal evita el error "insertBefore: node is not a child"
-// que ocurre cuando React intenta insertar/remover nodos con renderizado
-// condicional {cond && <div>} dentro de árboles con animaciones CSS.
 function Toaster({ notificacion, onClose }) {
     if (!notificacion) return null;
     const tieneAcciones = notificacion.acciones && notificacion.acciones.length > 0;
@@ -186,7 +180,6 @@ export function SubastaEnVivo() {
     });
 
     const mostrarNotificacion = useCallback((mensaje, tipo = "info", acciones = null) => {
-        // Manejar: mostrarNotificacion(string, tipo) O mostrarNotificacion({ mensaje, tipo, acciones })
         let mensajeSeguro, tipoSeguro, accionesSeguro;
         
         if (typeof mensaje === "object" && mensaje !== null) {
@@ -207,7 +200,7 @@ export function SubastaEnVivo() {
         
         setNotificacion({ mensaje: mensajeSeguro, tipo: tipoSeguro, acciones: accionesSeguro });
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        // ✅ Remover cierre automático - usuario debe hacer clic en Cancelar
+        
     }, []);
     
     const cerrarNotificacion = useCallback(() => {
@@ -266,7 +259,7 @@ export function SubastaEnVivo() {
     }, [compradoresDisponibles, selectedBuyerId]);
 
     // Carga inicial
-    useEffect(() => { cargarSubasta(true); }, [id]); // eslint-disable-line
+    useEffect(() => { cargarSubasta(true); }, [id]); 
 
     // Contador regresivo
     useEffect(() => {
@@ -289,20 +282,19 @@ export function SubastaEnVivo() {
         tick();
         const iv = setInterval(tick, 1000);
         return () => clearInterval(iv);
-    }, [subasta?.fecha_fin, subastaCerrada]); // eslint-disable-line
+    }, [subasta?.fecha_fin, subastaCerrada]); 
 
-    // ── Finalizar subasta cuando vence (notificar al servidor)
+    // Finalizar subasta cuando vence
     useEffect(() => {
         if (!tiempoRestante?.finalizada || subastaCerrada || !subasta?.id) return;
 
-        // Llamar al endpoint para cerrar en la BD
+        // Llamar para cerrar en la BD
         SubastaService.finalizarSubasta(subasta.id)
             .then((response) => {
                 console.log('Respuesta finalizarSubasta:', response);
                 setSubastaCerrada(true);
                 setSubasta((prev) => prev ? { ...prev, estado: "Finalizada", id_estado_subasta: 2 } : prev);
                 
-                // ✅ Mostrar ganador inmediatamente con el dato retornado por el servidor
                 const ganadorData = response?.data?.ganador;
                 console.log('Ganador recibido:', ganadorData);
                 
@@ -450,9 +442,6 @@ export function SubastaEnVivo() {
             
 
             if (result?.success) {
-                // FIX: NO reseteamos montoPuja aquí — el useEffect de montoMinimo
-                // lo actualizará automáticamente cuando Ably traiga la nueva pujaMaxima.
-                // Así el campo siempre muestra el nuevo mínimo correcto en ambos navegadores.
                 mostrarNotificacion("¡Puja registrada exitosamente!", "success");
             } else {
                 // El servidor respondió 2xx pero con error lógico
@@ -460,7 +449,6 @@ export function SubastaEnVivo() {
                 mostrarNotificacion(typeof msg === "string" ? msg : "Error al registrar la puja.", "error");
             }
         } catch (err) {
-            // FIX: Usamos la función helper para extraer siempre un string válido
             mostrarNotificacion(extraerMensajeError(err), "error");
         } finally {
             setEnviando(false);

@@ -57,7 +57,6 @@ class Puja
                 return;
             }
 
-            // Emitir evento Ably ANTES de responder
             $this->emitirNuevaPuja($input->id_subasta, $result);
 
             http_response_code(201);
@@ -81,10 +80,6 @@ class Puja
                 return;
             }
 
-            // ⚠️ IMPORTANTE: NO modificamos el estado aquí
-            // Si $result->deberiaCerrarse es true, el cliente lo detectará por la fecha
-            // El cierre automático debe ocurrir por cron o endpoint POST explícito
-            
             $response->toJSON($result);
         } catch (Exception $e) {
             (new Response())->toJSON(null);
@@ -92,11 +87,7 @@ class Puja
         }
     }
 
-    // ─────────────────────────────────────────────
-    // FINALIZAR SUBASTA (POST)
-    // El frontend llama cuando detecta que vencida
-    // POST /Puja/finalizar
-    // ─────────────────────────────────────────────
+
     public function finalizar()
     {
         try {
@@ -113,26 +104,22 @@ class Puja
             $id_subasta = intval($input->id_subasta);
             $subastaM = new SubastaModel();
 
-            // Verificar que debería estar cerrada
             if (!$subastaM->deberiaCerrarse($id_subasta)) {
                 http_response_code(422);
                 $response->toJSON(['error' => true, 'mensaje' => 'La subasta aun no vence o ya está cerrada.']);
                 return;
             }
 
-            // Cerrar explícitamente
             $subastaM->cerrarSiVencio($id_subasta);
 
             // Obtener ganador y emitir evento Ably
             $ganador = $subastaM->getPujaMaxima($id_subasta);
             $this->emitirCierre($id_subasta, $ganador);
 
-            // Si hay ganador (al menos una puja), cambiar a estado PENDIENTE PAGO (5)
             if ($ganador) {
                 $subastaM->cambiarAPendientePago($id_subasta);
             }
 
-            // ✅ Retornar ganador en la respuesta para mostrar inmediatamente
             $response->toJSON([
                 'success' => true, 
                 'mensaje' => 'Subasta finalizada correctamente.',
@@ -145,8 +132,7 @@ class Puja
         }
     }
 
-    // Convierte stdClass y arrays de objetos PHP a arrays puros
-    // para que Ably los serialice correctamente a JSON
+
     private function toArray($data)
     {
         return json_decode(json_encode($data), true);

@@ -14,10 +14,7 @@ class Subasta
             $response = new Response();
             $subasta  = new SubastaModel();
             
-            // ⚠️ Activar subastas que ya llegó su hora de inicio
             $subasta->activarTodasLasListas();
-            
-            // ⚠️ Limpiar subastas vencidas
             $subasta->cerrarTodasLasVencidas();
             
             $result   = $subasta->all();
@@ -35,10 +32,7 @@ class Subasta
             $response = new Response();
             $subasta  = new SubastaModel();
             
-            // ⚠️ Activar subastas que ya llegó su hora de inicio
             $subasta->activarTodasLasListas();
-            
-            // ⚠️ Limpiar subastas vencidas ANTES de retornar (de forma segura)
             $subasta->cerrarTodasLasVencidas();
             
             $result   = $subasta->getActivas();
@@ -56,10 +50,7 @@ class Subasta
             $response = new Response();
             $subasta  = new SubastaModel();
             
-            // ⚠️ Activar subastas que ya llegó su hora de inicio
             $subasta->activarTodasLasListas();
-            
-            // ⚠️ Limpiar subastas vencidas ANTES de retornar
             $subasta->cerrarTodasLasVencidas();
             
             $programadas = $subasta->getProgramadas();

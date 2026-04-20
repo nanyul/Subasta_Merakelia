@@ -9,9 +9,7 @@ class SubastaModel
         $this->enlace = new MySqlConnect();
     }
 
-    // TODAS LAS SUBASTAS (programadas + activas + finalizadas/canceladas)
-    // Reutiliza getProgramadas(), getActivas() y getFinalizadas()
-    // Retorna un array con todas las subastas
+    // TODAS LAS SUBASTAS
     public function all()
     {
         $programadas = $this->getProgramadas();
@@ -44,22 +42,17 @@ class SubastaModel
                 $imageM  = new ImageModel();
 
                 foreach ($vResultado as $subasta) {
-                    // Nombre del cuadro
                     $cuadro = $cuadroM->get($subasta->id_cuadro);
                     $subasta->objeto = ( is_array($cuadro) && count($cuadro) > 0) ? $cuadro[0]->nombre : null;
 
-                    // Imagen principal del cuadro
                     $subasta->imagen = $imageM->getImageCuadro($subasta->id_cuadro);
 
-                    // Estado de la subasta
                     $sqlEstado = "SELECT descripcion FROM estado_subasta WHERE id = $subasta->id_estado_subasta;";
                     $estado = $this->enlace->ExecuteSQL($sqlEstado);
                     $subasta->estado = ( is_array($estado) && count($estado) > 0) ? $estado[0]->descripcion : null;
 
-                    // Cantidad de pujas 
                     $subasta->cantidad_pujas = $this->CantidadPujas($subasta->id);
 
-                    // Limpiar campos innecesarios
                     unset($subasta->id_cuadro);
                     unset($subasta->id_estado_subasta);
                 }
@@ -92,20 +85,15 @@ class SubastaModel
                 $imageM  = new ImageModel();
 
                 foreach ($vResultado as $subasta) {
-                    // Nombre del cuadro
                     $cuadro = $cuadroM->get($subasta->id_cuadro);
                     $subasta->objeto = ( is_array($cuadro) && count($cuadro) > 0) ? $cuadro[0]->nombre : null;
 
-                    // Imagen principal del cuadro
                     $subasta->imagen = $imageM->getImageCuadro($subasta->id_cuadro);
 
-                    // Cantidad de pujas 
                     $subasta->cantidad_pujas = $this->CantidadPujas($subasta->id);
 
-                    
-                    $subasta->estado = "Activa";  // ← LÍNEA SIMPLE
+                    $subasta->estado = "Activa";
 
-                    // Limpiar campos innecesarios
                     unset($subasta->id_cuadro);
                 }
             }
@@ -138,19 +126,15 @@ class SubastaModel
                 $imageM  = new ImageModel();
 
                 foreach ($vResultado as $subasta) {
-                    // Nombre del cuadro
                     $cuadro = $cuadroM->get($subasta->id_cuadro);
                     $subasta->objeto = ( is_array($cuadro) && count($cuadro) > 0) ? $cuadro[0]->nombre : null;
 
-                    // Imagen principal del cuadro
                     $subasta->imagen = $imageM->getImageCuadro($subasta->id_cuadro);
 
-                    // Estado de la subasta
                     $sqlEstado = "SELECT descripcion FROM estado_subasta WHERE id = $subasta->id_estado_subasta;";
                     $estado = $this->enlace->ExecuteSQL($sqlEstado);
                     $subasta->estado = ( is_array($estado) && count($estado) > 0) ? $estado[0]->descripcion : null;
 
-                    // Cantidad de pujas 
                     $subasta->cantidad_pujas = $this->CantidadPujas($subasta->id);
 
 
@@ -189,7 +173,6 @@ class SubastaModel
         $imageM     = new ImageModel();
         $categoriaM = new CategoriasModel();
 
-        // Datos del cuadro: nombre, descripcion, condicion usando CuadrosModel
         $cuadro = $cuadroM->get($detalle->id_cuadro);
         if ( is_array($cuadro) && count($cuadro) > 0) {
             $detalle->objeto             = $cuadro[0]->nombre;
@@ -201,19 +184,15 @@ class SubastaModel
             $detalle->condicion          = null;
         }
 
-        // Imagen principal 
         $detalle->imagen = $imageM->getImageCuadro($detalle->id_cuadro);
 
-        // Categorías del cuadro (array anidado) 
         $categorias = $categoriaM->getByCuadro($detalle->id_cuadro);
         $detalle->categorias = array_column($categorias ?: [], 'descripcion');
 
-        // Estado de la subasta
         $sqlEstado = "SELECT descripcion FROM estado_subasta WHERE id = $detalle->id_estado_subasta;";
         $estado = $this->enlace->ExecuteSQL($sqlEstado);
         $detalle->estado = ( is_array($estado) && count($estado) > 0) ? $estado[0]->descripcion : null;
 
-        // Cantidad de pujas
         $detalle->cantidad_pujas = $this->CantidadPujas($detalle->id);
 
         unset($detalle->id_cuadro);
@@ -223,16 +202,13 @@ class SubastaModel
     }
 
     
-    // HISTORIAL DE PUJAS de una subasta
-    // Orden cronológico DESCENDENTE (más reciente primero)
-    // Incluye: usuario, monto, fecha_hora
+    // HISTORIAL DE PUJAS
     public function getHistorialPujas($id_subasta)
     {
-        // Verificar que la subasta exista
         $sqlCheck = "SELECT id FROM subasta WHERE id = $id_subasta;";
         $check = $this->enlace->ExecuteSQL($sqlCheck);
         if (!is_array($check) || count($check) === 0) {
-            return null; // Subasta no encontrada
+            return null;
         }
 
         $vSql = "SELECT
@@ -275,9 +251,7 @@ class SubastaModel
     }
 
    
-    // SUBASTAS EN LAS QUE HA PARTICIPADO UN CUADRO
-    // Historial mínimo: id subasta, fecha_inicio,
-    //                   fecha_cierre, estado
+    // SUBASTAS POR CUADRO
     public function getSubastabyCuadro($id_cuadro)
     {
         $vSql = "SELECT
@@ -293,7 +267,6 @@ class SubastaModel
         if ($vResultado) {
             if (is_array($vResultado) && count($vResultado) > 0) {
                 foreach ($vResultado as $subasta) {
-                    // Estado de cada subasta
                     $sqlEstado = "SELECT descripcion FROM estado_subasta WHERE id = $subasta->id_estado_subasta;";
                     $estado = $this->enlace->ExecuteSQL($sqlEstado);
                     $subasta->estado_subasta = ( is_array($estado) && count($estado) > 0) ? $estado[0]->descripcion : null;
@@ -307,16 +280,9 @@ class SubastaModel
     }
 
 
-    // ─────────────────────────────────────────────
     // CREAR SUBASTA
-    // Validaciones directas en SQL (evita dependencia circular con CuadrosModel)
-    // Estado inicial: 4 = Programada (borrador)
-    // id_usuario viene del front como variable lógica simulada
-    // ─────────────────────────────────────────────
     public function create($objeto)
     {
-        // Validar que el cuadro exista y esté activo
-        // Se consulta directamente para evitar dependencia circular con CuadrosModel
         $sqlCuadro = "SELECT c.id, ec.descripcion AS estado_cuadro
                       FROM cuadro_subastable c
                       INNER JOIN estado_cuadro ec ON ec.id = c.id_estado_cuadro
@@ -332,7 +298,6 @@ class SubastaModel
             return ["error" => "El objeto seleccionado no está activo."];
         }
  
-        // Validar que el cuadro no tenga ya una subasta activa (estado 1 = Activa)
         $sqlCheck = "SELECT COUNT(*) AS total
                      FROM subasta
                      WHERE id_cuadro = $objeto->id_cuadro
@@ -343,7 +308,6 @@ class SubastaModel
             return ["error" => "El objeto ya tiene una subasta activa."];
         }
  
-        // Insertar la subasta
         $sql = "INSERT INTO subasta (
                     fecha_inicio,
                     fecha_fin,
@@ -373,12 +337,8 @@ class SubastaModel
  
 
     // EDITAR SUBASTA
-    // Solo permitido si: no ha iniciado Y no tiene pujas
-    // Campos editables: fecha_inicio, fecha_fin, precio_base, incremento_minimo
-    // Validaciones directas en SQL (se evita llamar a get() antes de editar)
     public function update($objeto)
     {
-        // Verificar existencia + fecha_inicio + cantidad_pujas en una sola consulta
         $sqlCheck = "SELECT
                         s.fecha_inicio,
                         s.id_estado_subasta,
@@ -408,7 +368,6 @@ class SubastaModel
             return ["error" => "No se puede editar: la subasta ya tiene pujas registradas."];
         }
  
-        // Actualizar solo los campos permitidos
         $sql = "UPDATE subasta SET
                     fecha_inicio      = '$objeto->fecha_inicio',
                     fecha_fin         = '$objeto->fecha_fin',
@@ -423,11 +382,8 @@ class SubastaModel
  
 
     // PUBLICAR SUBASTA
-    // Cambia estado: Programada (4) → Activa (1)
-    // Solo si fecha_inicio es válida (no en el pasado)
     public function publish($id)
     {
-        // Verificar existencia + estado actual + fecha_inicio en una sola consulta
         $sqlCheck = "SELECT
                         s.id_estado_subasta,
                         s.fecha_inicio
@@ -440,12 +396,10 @@ class SubastaModel
             return ["error" => "La subasta no existe."];
         }
  
-        // Solo se puede publicar si está en estado Programada (4 = borrador)
         if ($check[0]->id_estado_subasta != 4) {
             return ["error" => "Solo se pueden publicar subastas en estado Programada."];
         }
  
-        // La fecha de inicio no puede estar en el pasado
         try {
             $timezone = new DateTimeZone('UTC');
             $ahora  = new DateTime('now', $timezone);
@@ -458,7 +412,6 @@ class SubastaModel
             return ["error" => "No se puede publicar: la fecha de inicio ya pasó."];
         }
  
-        // Cambiar estado a Activa (1)
         $sql = "UPDATE subasta
                 SET id_estado_subasta = 1
                 WHERE id = $id;";
@@ -470,10 +423,8 @@ class SubastaModel
  
 
     // CANCELAR SUBASTA
-    // Cambia estado a Cancelada (3)
     public function cancel($id)
     {
-        // Cambiar estado a Cancelada (3)
         $sql = "UPDATE subasta
                 SET id_estado_subasta = 3
                 WHERE id = $id;";
@@ -484,8 +435,6 @@ class SubastaModel
     }
 
     public function cancelarSubasta($id){
-         
-        // Cambiar estado a Cancelada (3)
         $sql = "UPDATE subasta
                 SET id_estado_subasta = 3
                 WHERE id = $id;";
@@ -496,10 +445,7 @@ class SubastaModel
     }
 
 
-// ─────────────────────────────────────────────
-// VERIFICAR SI DEBERÍA ESTAR CERRADA (solo consulta, no modifica)
-// Retorna true/false sin cambiar base de datos
-// ─────────────────────────────────────────────
+// VERIFICAR SI DEBERÍA ESTAR CERRADA
 public function deberiaCerrarse($id_subasta)
 {
     $sqlCheck = "SELECT id, id_estado_subasta, fecha_fin
@@ -511,45 +457,35 @@ public function deberiaCerrarse($id_subasta)
 
     $subasta = $result[0];
 
-    // Solo verificar si está activa (id_estado_subasta = 1)
     if ($subasta->id_estado_subasta != 1) return false;
 
     try {
-        $timezone = new DateTimeZone('UTC');
-        $ahora = new DateTime('now', $timezone);
-        $fin   = new DateTime($subasta->fecha_fin, $timezone);
+        $ahora = new DateTime('now', new DateTimeZone('UTC'));
+        $fin   = new DateTime($subasta->fecha_fin, new DateTimeZone('UTC'));
 
-        return $ahora > $fin; // true si ya venció
+        return $ahora > $fin;
     } catch (Exception $e) {
         return false;
     }
 }
 
-// ─────────────────────────────────────────────
 // ACTIVAR SUBASTAS PROGRAMADAS
-// Cambiar estado Programada(4) → Activa(1) cuando llegue fecha_inicio
-// Usa NOW() de SQL para mayor compatibilidad
-// ─────────────────────────────────────────────
 public function activarTodasLasListas()
 {
     try {
-        // Usar NOW() de SQL para comparación
-        // Subastas con estado 4 (Programada) cuya fecha_inicio ya pasó → cambiar a 1 (Activa)
         $sql = "UPDATE subasta 
                 SET id_estado_subasta = 1 
                 WHERE id_estado_subasta = 4 
                   AND fecha_inicio <= NOW();";
 
-        // Ejecutar sin lanzar excepciones si falla
         if (method_exists($this->enlace, 'executeSQL_DML')) {
             @$this->enlace->executeSQL_DML($sql);
         }
     } catch (Exception $e) {
-        // Silencioso
     }
 }
 
-// Obtener subastas con PAGO PENDIENTE (estado 5)
+// OBTENER SUBASTAS CON PAGO PENDIENTE
 public function getPendientesPago()
 {
     $vSql = "SELECT
@@ -572,22 +508,17 @@ public function getPendientesPago()
             $imageM  = new ImageModel();
 
             foreach ($vResultado as $subasta) {
-                // Nombre del cuadro
                 $cuadro = $cuadroM->get($subasta->id_cuadro);
                 $subasta->objeto = ( is_array($cuadro) && count($cuadro) > 0) ? $cuadro[0]->nombre : null;
 
-                // Imagen principal del cuadro
                 $subasta->imagen = $imageM->getImageCuadro($subasta->id_cuadro);
 
-                // Estado de la subasta
                 $sqlEstado = "SELECT descripcion FROM estado_subasta WHERE id = $subasta->id_estado_subasta;";
                 $estado = $this->enlace->ExecuteSQL($sqlEstado);
                 $subasta->estado = ( is_array($estado) && count($estado) > 0) ? $estado[0]->descripcion : null;
 
-                // Cantidad de pujas 
                 $subasta->cantidad_pujas = $this->CantidadPujas($subasta->id);
 
-                // Obtener la puja máxima (ganador)
                 $pujaMaxima = $this->getPujaMaxima($subasta->id);
                 $subasta->puja_maxima = $pujaMaxima;
 
@@ -600,8 +531,7 @@ public function getPendientesPago()
     return $vResultado ? $vResultado : [];
 }
 
-// Cambio a PENDIENTE PAGO (estado 5)
-// Se ejecuta después de que se anuncia el ganador
+// CAMBIAR A PENDIENTE PAGO
 public function cambiarAPendientePago($idSubasta)
 {
     try {
@@ -609,7 +539,6 @@ public function cambiarAPendientePago($idSubasta)
                 SET id_estado_subasta = 5 
                 WHERE id = $idSubasta AND id_estado_subasta = 2;";
 
-        // Ejecutar sin lanzar excepciones si falla
         if (method_exists($this->enlace, 'executeSQL_DML')) {
             @$this->enlace->executeSQL_DML($sql);
         }
@@ -618,62 +547,42 @@ public function cambiarAPendientePago($idSubasta)
     }
 }
 
-// ─────────────────────────────────────────────
 // CERRAR TODAS LAS SUBASTAS VENCIDAS
-// Actualiza estado de todas las subastas que vencieron (1 → 2)
-// Usa NOW() de SQL para mayor compatibilidad
-// ─────────────────────────────────────────────
 public function cerrarTodasLasVencidas()
 {
     try {
-        // Usar NOW() de SQL para comparación
         $sql = "UPDATE subasta 
                 SET id_estado_subasta = 2 
                 WHERE id_estado_subasta = 1 
                   AND fecha_fin < NOW();";
 
-        // Ejecutar sin lanzar excepciones si falla
         if (method_exists($this->enlace, 'executeSQL_DML')) {
             @$this->enlace->executeSQL_DML($sql);
         }
     } catch (Exception $e) {
-        // Silencioso
     }
 }
 
-// ─────────────────────────────────────────────
-// CIERRE AUTOMÁTICO - MODIFICA LA BD
-// Solo llamar explícitamente cuando sea necesario (cron, webhook, etc)
-// NO llamar en métodos GET
-// ─────────────────────────────────────────────
+// CIERRE AUTOMÁTICO
 public function cerrarSiVencio($id_subasta)
 {
     if (!$this->deberiaCerrarse($id_subasta)) {
         return false;
     }
 
-    // Actualizar estado a Finalizada (2)
     $this->enlace->executeSQL_DML(
         "UPDATE subasta SET id_estado_subasta = 2 WHERE id = $id_subasta;"
     );
     return true;
 }
 
-// ─────────────────────────────────────────────
-// CIERRE AUTOMÁTICO (DEPRECATED - Para compatibilidad)
-// Cambia estado Activa(1) → Finalizada(2) si venció fecha_fin
-// Retorna true si se acaba de cerrar
-// ⚠️ NO USAR EN GET REQUESTS - USAR cerrarSiVencio() explícitamente
-// ─────────────────────────────────────────────
+// CIERRE AUTOMÁTICO (DEPRECATED)
 public function verificarCierre($id_subasta)
 {
-    // Solo verifica, no modifica
     return $this->deberiaCerrarse($id_subasta);
 }
 
-// ─────────────────────────────────────────────
-// PUJA MÁS ALTA de una subasta
-// ─────────────────────────────────────────────
+// PUJA MÁS ALTA
 public function getPujaMaxima($id_subasta)
 {
     $vSql = "SELECT p.id, p.monto, p.id_usuario, u.nombre AS nombre_usuario
@@ -688,9 +597,7 @@ public function getPujaMaxima($id_subasta)
     return (is_array($result) && count($result) > 0) ? $result[0] : null;
 }
 
-// ─────────────────────────────────────────────
-// VENDEDOR de una subasta
-// ─────────────────────────────────────────────
+// VENDEDOR
 public function getVendedor($id_subasta)
 {
     $vSql = "SELECT u.id, u.nombre
@@ -703,16 +610,9 @@ public function getVendedor($id_subasta)
     return (is_array($result) && count($result) > 0) ? $result[0] : null;
 }
 
-// ─────────────────────────────────────────────
-// DETALLE COMPLETO para la pantalla de subasta
-// ⚠️ NO MODIFICA EL ESTADO - Solo consulta y retorna datos
-// ─────────────────────────────────────────────
+// DETALLE COMPLETO
 public function getDetalleActiva($id)
 {
-    // ⚠️ IMPORTANTE: NO llamar a verificarCierre() aquí
-    // Si la subasta debería estar cerrada, el cliente lo detectará por la fecha
-    // El cierre debe ser explícito a través de cron o endpoint POST
-
     $detalle = $this->get($id);
     if ($detalle === null) return null;
 
@@ -722,7 +622,7 @@ public function getDetalleActiva($id)
 
     $detalle->historial    = $this->getHistorialPujas($id) ?: [];
     $detalle->puja_maxima  = $this->getPujaMaxima($id);
-    $detalle->deberiaCerrarse = $this->deberiaCerrarse($id); // Solo INFO, no modifica
+    $detalle->deberiaCerrarse = $this->deberiaCerrarse($id);
 
     return $detalle;
 }
