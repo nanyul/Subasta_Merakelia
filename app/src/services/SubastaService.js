@@ -64,6 +64,7 @@ class SubastaService {
     getDetalleSubasta(id) {
         return axios.get(`${PUJA_URL}/detalle/${id}`);
     }
+    
 
     registrarPuja(monto, id_usuario, id_subasta) {
         return axios.post(`${PUJA_URL}/registrar`, { monto, id_usuario, id_subasta });

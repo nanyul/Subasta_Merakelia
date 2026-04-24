@@ -39,6 +39,14 @@ class UserService {
       throw error;
     });
   }
+
+  loginUser(User) {
+    return axios.post(BASE_URL + '/login/', JSON.stringify(User), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
 }
 
 export default new UserService();

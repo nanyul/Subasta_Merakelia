@@ -89,8 +89,11 @@ class UserModel
 	//
 	public function create($objeto)
 	{
+		// Hash de la contraseña con BCRYPT
+		$hashedPassword = password_hash($objeto->contrasena, PASSWORD_BCRYPT);
+		
 		$sql = "INSERT INTO usuario (correo, contrasena, nombre, fecha_registro, id_rol, estado) " .
-			"VALUES ('$objeto->correo', '$objeto->contrasena', '$objeto->nombre', " .
+			"VALUES ('$objeto->correo', '$hashedPassword', '$objeto->nombre', " .
 			"'$objeto->fecha_registro', $objeto->id_rol, $objeto->estado)";
 
 		$idUser = $this->enlace->executeSQL_DML_last($sql);
@@ -137,5 +140,43 @@ class UserModel
 
 		return null;
 		
+	}
+
+		public function login($objeto)
+	{
+		// Validar que el objeto no sea null
+		if (!$objeto || !isset($objeto->correo) || !isset($objeto->contrasena)) {
+			return false;
+		}
+
+		$vSql = "SELECT * from usuario where correo='$objeto->correo'";
+		//Ejecutar la consulta
+		$vResultado = $this->enlace->ExecuteSQL($vSql);
+		
+		if ($vResultado && is_array($vResultado) && count($vResultado) > 0) {
+			$user = $vResultado[0];
+			// Verificar la contraseña hasheada con BCRYPT
+			if (password_verify($objeto->contrasena, $user->contrasena)) {
+				$usuario = $this->get($user->id);
+				if (!empty($usuario)) {
+					// Datos para el token JWT
+					$data = [
+						'id' => $usuario->id,
+						'correo' => $usuario->correo,
+						'rol' => $usuario->rol,
+						'iat' => time(),
+						'exp' => time() + 3600  // Expira en 1 hora
+					];
+
+					// Generar el token JWT
+					$jwt_token = JWT::encode($data, config::get('SECRET_KEY'), 'HS256');
+
+					// Enviar el token como respuesta
+					return $jwt_token;
+				}
+			}
+		}
+		
+		return false;
 	}
 }

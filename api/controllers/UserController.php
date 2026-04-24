@@ -93,5 +93,41 @@ class User
             handleException($e);
         }
     }
+
+    public function login()
+    {
+        $response = new Response();
+        $request = new Request();
+        
+        // Log de debug
+        error_log("=== LOGIN DEBUG ===");
+        error_log("REQUEST METHOD: " . $_SERVER['REQUEST_METHOD']);
+        error_log("REQUEST URI: " . $_SERVER['REQUEST_URI']);
+        error_log("CONTENT TYPE: " . ($_SERVER["CONTENT_TYPE"] ?? "VACIO"));
+        
+        // Obtener JSON enviado
+        $rawInput = file_get_contents("php://input");
+        error_log("RAW INPUT: " . $rawInput);
+        
+        $inputJSON = $request->getJSON();
+        error_log("JSON DECODED: " . json_encode($inputJSON));
+        
+        // Debug: Si no recibe JSON, intenta obtener de $_POST
+        if ($inputJSON === null && !empty($_POST)) {
+            $inputJSON = (object)$_POST;
+            error_log("USANDO POST: " . json_encode($inputJSON));
+        }
+        
+        $usuario = new UserModel();
+        $result = $usuario->login($inputJSON);
+        error_log("LOGIN RESULT: " . ($result ? "SUCCESS - " . substr($result, 0, 50) : "FAIL"));
+        error_log("=== END DEBUG ===");
+        
+        if (isset($result) && !empty($result) && $result != false) {
+            $response->toJSON($result);
+        } else {
+            $response->toJSON(null, "Usuario no válido");
+        }
+    }
     
 }

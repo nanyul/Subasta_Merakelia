@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useUser } from "@/hooks/useUser";
 import {
   Layers,
   Film,
@@ -34,9 +35,10 @@ import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 
 export default function Header() {
   const navigate = useNavigate();
+  const { isAuthenticated, clearUser, user } = useUser();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cantidadPendiente, setCantidadPendiente] = useState(0);
-  const userEmail = "Invitado";
+  const userEmail = isAuthenticated && user ? user.correo : "Invitado";
 
   // Obtener cantidad de pagos pendientes desde la API
   const cargarPendientes = useCallback(async () => {
@@ -109,16 +111,24 @@ export default function Header() {
   ];
 
   const userItems = [
-    { title: "Login", href: "/user/login", icon: <LogIn className="h-4 w-4" /> },
+    {
+      title: "Login",
+      href: "/user/login",
+      icon: <LogIn className="h-4 w-4" />,
+      show: !isAuthenticated,
+    },
     {
       title: "Registrarse",
       href: "/user/create",
       icon: <UserPlus className="h-4 w-4" />,
+      show: !isAuthenticated,
     },
     {
       title: "Logout",
       href: "#login",
       icon: <LogOut className="h-4 w-4" />,
+      show: isAuthenticated,
+      action: clearUser,
     },
   ];
   return (
@@ -215,16 +225,36 @@ export default function Header() {
                 <ChevronDown className="h-3 w-3" />
               </MenubarTrigger>
               <MenubarContent className="bg-primary/0 backdrop-blur-md border-white/10">
-                {userItems.map((item) => (
-                  <MenubarItem key={item.href} asChild>
-                    <Link
-                      to={item.href}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199]"
-                    >
-                      {item.icon} {item.title}
-                    </Link>
-                  </MenubarItem>
-                ))}
+                {userItems.map((item) => {
+                  if (!item.show) return null;
+                  
+                  if (item.action === clearUser) {
+                    return (
+                      <MenubarItem key={item.href} asChild>
+                        <button
+                          onClick={() => {
+                            clearUser();
+                            navigate("/");
+                          }}
+                          className="w-full flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199] text-left"
+                        >
+                          {item.icon} {item.title}
+                        </button>
+                      </MenubarItem>
+                    );
+                  }
+                  
+                  return (
+                    <MenubarItem key={item.href} asChild>
+                      <Link
+                        to={item.href}
+                        className="flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199]"
+                      >
+                        {item.icon} {item.title}
+                      </Link>
+                    </MenubarItem>
+                  );
+                })}
               </MenubarContent>
             </MenubarMenu>
           </Menubar>
@@ -294,16 +324,36 @@ export default function Header() {
                   <h4 className="mb-2 text-lg font-semibold flex items-center gap-2">
                     <User /> {userEmail}
                   </h4>
-                  {userItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-[#F2E199] hover:bg-white/10 transition"
-                    >
-                      {item.icon} {item.title}
-                    </Link>
-                  ))}
+                  {userItems.map((item) => {
+                    if (!item.show) return null;
+                    
+                    if (item.action === clearUser) {
+                      return (
+                        <button
+                          key={item.href}
+                          onClick={() => {
+                            clearUser();
+                            setMobileOpen(false);
+                            navigate("/");
+                          }}
+                          className="w-full text-left flex items-center gap-2 py-2 px-3 rounded-md text-[#F2E199] hover:bg-white/10 transition"
+                        >
+                          {item.icon} {item.title}
+                        </button>
+                      );
+                    }
+                    
+                    return (
+                      <Link
+                        key={item.href}
+                        to={item.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2 py-2 px-3 rounded-md text-[#F2E199] hover:bg-white/10 transition"
+                      >
+                        {item.icon} {item.title}
+                      </Link>
+                    );
+                  })}
                 </div>
               </nav>
             </SheetContent>

@@ -598,7 +598,6 @@ public function cerrarSiVencio($id_subasta)
 // CIERRE AUTOMÁTICO (DEPRECATED - Para compatibilidad)
 // Cambia estado Activa(1) → Finalizada(2) si venció fecha_fin
 // Retorna true si se acaba de cerrar
-// ⚠️ NO USAR EN GET REQUESTS - USAR cerrarSiVencio() explícitamente
 public function verificarCierre($id_subasta)
 {
     return $this->deberiaCerrarse($id_subasta);
@@ -639,7 +638,6 @@ public function getVendedor($id_subasta)
 // DETALLE COMPLETO
 
 // DETALLE COMPLETO para la pantalla de subasta
-// ⚠️ NO MODIFICA EL ESTADO - Solo consulta y retorna datos
 public function getDetalleActiva($id)
 {
     $detalle = $this->get($id);

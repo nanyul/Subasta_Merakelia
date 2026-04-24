@@ -3,9 +3,13 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import UserProvider from './context/UserProvider'
 import { Layout } from './components/Layout/Layout'
 import { Home } from './components/Home/Home'
 import { PageNotFound } from './components/Home/PageNotFound'
+
+import Login from './components/User/Login'
+import Register from './components/User/Register'
 //Rutas
 import TableUser from './components/Tablas/TableUsers'
 import { DetailUser } from './components/Tablas/DetailUser'
@@ -27,6 +31,7 @@ import { CreateCuadros } from './components/Tablas/Form/CreateCuadros'
 import { UpdateCuadros } from './components/Tablas/Form/UpdateCuadros'
 
 const rutas = createBrowserRouter([
+  
   {
     element: <Layout/>,
     children: [
@@ -50,6 +55,14 @@ const rutas = createBrowserRouter([
       //Subastas components
       {path:"Subastas",element: <TableSubastas/>},
       {path:"subasta/:id", element: <DetailSubasta /> },
+      {
+        path: '/user/login',
+        element: <Login />
+      },
+      {
+        path: '/user/create',
+        element: <Register />
+      },
       {path:"subasta/activas", element: <ListSubastas />},
       {path:"subasta/pujas/:id", element: <HistorialPujas />},
       {path:"subasta/edit/:id", element: <UpdateSubasta />},
@@ -62,12 +75,14 @@ const rutas = createBrowserRouter([
 ])
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={rutas} />
-    <Toaster
-      position="top-right"
-      toastOptions={{
-        duration: 3000,
-      }}
-    />
+    <UserProvider>
+      <RouterProvider router={rutas} />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+        }}
+      />
+    </UserProvider>
   </StrictMode>,
 )
