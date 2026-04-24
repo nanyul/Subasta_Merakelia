@@ -5,6 +5,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import UserProvider from './context/UserProvider'
 import { Layout } from './components/Layout/Layout'
+import { RoleRoute } from './components/Auth/RoleRoute'
 import { Home } from './components/Home/Home'
 import { PageNotFound } from './components/Home/PageNotFound'
 
@@ -41,7 +42,14 @@ const rutas = createBrowserRouter([
       // Ruta comodín (404)
       { path: "*", element: <PageNotFound /> },
        //Rutas componentes
-      {path:"user", element: <TableUser/>},
+      {
+        path:"user",
+        element: (
+          <RoleRoute requiredRoles={["administrador"]}>
+            <TableUser/>
+          </RoleRoute>
+        )
+      },
       {path:"user/:id", element: <DetailUser />},
       {path:"user/create", element: <CreateUser/>},
       {path:"user/edit/:id", element: <UpdateUser/>},
@@ -68,8 +76,23 @@ const rutas = createBrowserRouter([
       {path:"subasta/edit/:id", element: <UpdateSubasta />},
       {path:"subasta/create", element: <CreateSubasta />},
       {path:"subasta/en-vivo/:id", element: <SubastaEnVivo />},
-      {path:"pago-pendiente", element: <PagoPendiente />},
-      {path:"pago", element: <Pago />},
+      {
+        path:"pago-pendiente",
+        element: (
+          <RoleRoute requiredRoles={["administrador"]}>
+            <PagoPendiente />
+          </RoleRoute>
+        )
+
+      },
+      {
+        path:"pago",
+        element: (
+          <RoleRoute requiredRoles={["administrador"]}>
+            <Pago />
+          </RoleRoute>
+        )
+      },
     ]
   }
 ])

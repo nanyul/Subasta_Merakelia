@@ -35,13 +35,21 @@ import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 
 export default function Header() {
   const navigate = useNavigate();
-  const { isAuthenticated, clearUser, user } = useUser();
+  const { isAuthenticated, clearUser, user, authorize } = useUser();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cantidadPendiente, setCantidadPendiente] = useState(0);
   const userEmail = isAuthenticated && user ? user.correo : "Invitado";
+  const isAdmin = authorize(["administrador"]);
+  const isVendedor = authorize(["vendedor"]);
+  const isComprador = authorize(["comprador"]);
+  const canViewMantenimientos = isAdmin || isVendedor;
+  const canViewPagos = isAdmin || isComprador;
+  const myUserDetailPath = user?.id ? `/user/${user.id}` : null;
 
   // Obtener cantidad de pagos pendientes desde la API
   const cargarPendientes = useCallback(async () => {
+    if (!canViewPagos) return;
+
     try {
       const res = await SubastaService.getSubastasPendientesPago();
       
@@ -54,11 +62,11 @@ export default function Header() {
       console.error("Error al cargar pagos pendientes:", error);
       setCantidadPendiente(0);
     }
-  }, []);
+  }, [canViewPagos]);
 
   useEffect(() => {
     cargarPendientes();
-  }, []);
+  }, [cargarPendientes]);
 
   useEffect(() => {
     window.addEventListener("pagoPendienteChanged", cargarPendientes);
@@ -97,20 +105,29 @@ export default function Header() {
       title: "Usuarios",
       href: "/user",
       icon: <Wrench className="h-4 w-4" />,
+      show: isAdmin,
     },
     {
       title: "Cuadros Subastables",
       href: "/CuadrosSubastables",
       icon: <ShoppingBasket className="h-4 w-4" />,
+      show: canViewMantenimientos,
     },
     {
       title: "Subastas",
       href: "/subastas",
       icon: <HandCoins className="h-4 w-4" />,
+      show: canViewMantenimientos,
     }
-  ];
+  ].filter((item) => item.show);
 
   const userItems = [
+    {
+      title: userEmail,
+      href: myUserDetailPath,
+      icon: <User className="h-4 w-4" />,
+      show: isAuthenticated && !!myUserDetailPath,
+    },
     {
       title: "Login",
       href: "/user/login",
@@ -193,27 +210,29 @@ export default function Header() {
             </MenubarMenu>
 
             {/* Mantenimientos */}
-            <MenubarMenu>
-              <MenubarTrigger
-                className="font-medium flex items-center gap-1 hover:text-secondary transition focus:bg-[#194174] data-[state=open]:bg-[#194174]"
-                style={{ color: '#F2E199' }}
-              >
-                <Layers className="h-4 w-4" /> Mantenimientos
-                <ChevronDown className="h-3 w-3" />
-              </MenubarTrigger>
-              <MenubarContent className="bg-primary/0 backdrop-blur-md border-white/10">
-                {mantItems.map((item) => (
-                  <MenubarItem key={item.href} asChild>
-                    <Link
-                      to={item.href}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199]"
-                    >
-                      {item.icon} {item.title}
-                    </Link>
-                  </MenubarItem>
-                ))}
-              </MenubarContent>
-            </MenubarMenu>
+            {mantItems.length > 0 && (
+              <MenubarMenu>
+                <MenubarTrigger
+                  className="font-medium flex items-center gap-1 hover:text-secondary transition focus:bg-[#194174] data-[state=open]:bg-[#194174]"
+                  style={{ color: '#F2E199' }}
+                >
+                  <Layers className="h-4 w-4" /> Mantenimientos
+                  <ChevronDown className="h-3 w-3" />
+                </MenubarTrigger>
+                <MenubarContent className="bg-primary/0 backdrop-blur-md border-white/10">
+                  {mantItems.map((item) => (
+                    <MenubarItem key={item.href} asChild>
+                      <Link
+                        to={item.href}
+                        className="flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199]"
+                      >
+                        {item.icon} {item.title}
+                      </Link>
+                    </MenubarItem>
+                  ))}
+                </MenubarContent>
+              </MenubarMenu>
+            )}
 
             {/* Usuario */}
             <MenubarMenu>
@@ -262,16 +281,18 @@ export default function Header() {
 
         {/* -------- Billete + Menú móvil -------- */}
         <div className="flex items-center gap-4">
-          <button onClick={handleClickBillete} className="relative hover:opacity-80 cursor-pointer">
-            <CreditCard className="h-6 w-6" style={{ color: '#ECB44D' }} />
-            {cantidadPendiente > 0 && (
-              <Badge
-                className="absolute -top-2 -right-3 rounded-full px-2 py-0 text-xs font-semibold bg-[#ECB44D] text-[#171741]"
-              >
-                {cantidadPendiente}
-              </Badge>
-            )}
-          </button>
+          {canViewPagos && (
+            <button onClick={handleClickBillete} className="relative hover:opacity-80 cursor-pointer">
+              <CreditCard className="h-6 w-6" style={{ color: '#ECB44D' }} />
+              {cantidadPendiente > 0 && (
+                <Badge
+                  className="absolute -top-2 -right-3 rounded-full px-2 py-0 text-xs font-semibold bg-[#ECB44D] text-[#171741]"
+                >
+                  {cantidadPendiente}
+                </Badge>
+              )}
+            </button>
+          )}
 
           {/* Menú móvil */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -304,21 +325,23 @@ export default function Header() {
                   ))}
                 </div>
 
-                <div>
-                  <h4 className="mb-2 text-lg font-semibold flex items-center gap-2">
-                    <Layers /> Mantenimientos
-                  </h4>
-                  {mantItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-[#F2E199] hover:bg-white/10 transition"
-                    >
-                      {item.icon} {item.title}
-                    </Link>
-                  ))}
-                </div>
+                {mantItems.length > 0 && (
+                  <div>
+                    <h4 className="mb-2 text-lg font-semibold flex items-center gap-2">
+                      <Layers /> Mantenimientos
+                    </h4>
+                    {mantItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        to={item.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2 py-2 px-3 rounded-md text-[#F2E199] hover:bg-white/10 transition"
+                      >
+                        {item.icon} {item.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
 
                 <div>
                   <h4 className="mb-2 text-lg font-semibold flex items-center gap-2">

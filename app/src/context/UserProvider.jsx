@@ -45,7 +45,8 @@ export default function UserProvider({ children }) {
     const authorize = useCallback(
         (requiredRoles = []) => {
             if (!user || !user.rol) return false;
-            return requiredRoles.includes(user.rol.descripcion);
+            const userRole = typeof user.rol === "string" ? user.rol : user.rol.descripcion;
+            return requiredRoles.includes(userRole);
         },
         [user]
     );

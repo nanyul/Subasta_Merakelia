@@ -19,14 +19,26 @@ import fondoTabla from "@/assets/fondoTabla.png";
 
 //Services
 import UserService from '../../services/UserService';
+import { useUser } from '@/hooks/useUser';
 
 export function DetailUser() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const { user: authUser, authorize } = useUser();
     const [user, setData] = useState(null); //Constante para guardar los datos del usuario
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    const isAdmin = authorize(["administrador"]);
+    const isOwnProfile = Number(authUser?.id) === Number(id);
+    const canAccessUserDetail = isAdmin || isOwnProfile;
+
     useEffect(() => {
+        if (!canAccessUserDetail) {
+            setLoading(false);
+            return;
+        }
+
         const fetchData = async () => {
             try {
                 const response = await UserService.getUserById(id);
@@ -43,7 +55,11 @@ export function DetailUser() {
             }
         };
         fetchData();
-    }, [id]);
+    }, [id, canAccessUserDetail]);
+
+    if (!canAccessUserDetail) {
+        return <ErrorAlert title="Acceso no autorizado" message="Solo puedes ver tu propio perfil." />;
+    }
 
 
     if (loading) return <LoadingGrid count={1} type="grid" />;
