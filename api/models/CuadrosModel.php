@@ -12,14 +12,14 @@ class CuadrosModel
         
         $vSql = "SELECT c.id, c.nombre, c.descripcion, c.nombre_artista, c.ano_creacion, c.tecnica, 
         c.dimensiones, c.material_soporte, c.procedencia, c.certificado_autenticidad, c.fecha_registro, 
-        c.valor_estimado, ROUND(c.valor_estimado * 510, 2) AS valor_estimado_colones,
+        c.valor_estimado, c.id_usuario, ROUND(c.valor_estimado * 510, 2) AS valor_estimado_colones,
         CASE c.id_estado_cuadro
             WHEN 1 THEN 'Publicado'
             WHEN 2 THEN 'Reservado'
             ELSE 'Retirado'
         END AS estado_cuadro,
         IF(c.id_estado_condicion = 1, 'Nuevo', 'Usado') AS estado_condicion,
-        u.nombre AS nombre_dueno
+		u.nombre AS nombre_dueno
         FROM cuadro_subastable c
         INNER JOIN usuario u ON u.id = c.id_usuario;";
 

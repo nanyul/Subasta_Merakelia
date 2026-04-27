@@ -74,10 +74,6 @@ class SubastaService {
         return axios.post(`${PUJA_URL}/finalizar`, { id_subasta });
     }
 
-    cambiarAPendientePago(id_subasta) {
-        return axios.post(BASE_URL + "/cambiarAPendientePago", { id_subasta });
-    }
-
     confirmarPago(id_subasta) {
         return axios.post(BASE_URL + "/confirmarPago", { id_subasta });
     }

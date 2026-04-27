@@ -16,6 +16,7 @@ import {
   User,
   ShoppingBasket,
   HandCoins,
+  BarChart3,
   Palette,
 } from "lucide-react";
 import SubastaService from "@/services/SubastaService";
@@ -117,6 +118,12 @@ export default function Header() {
       title: "Subastas",
       href: "/subastas",
       icon: <HandCoins className="h-4 w-4" />,
+      show: canViewMantenimientos,
+    },
+    {
+      title: "Gráficos",
+      href: "/subasta/graph",
+      icon: <BarChart3 className="h-4 w-4" />,
       show: canViewMantenimientos,
     }
   ].filter((item) => item.show);

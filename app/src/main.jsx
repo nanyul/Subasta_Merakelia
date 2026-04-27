@@ -30,6 +30,7 @@ import { CreateUser } from './components/Tablas/Form/CreateUser'
 import { UpdateUser } from './components/Tablas/Form/UpdateUser'
 import { CreateCuadros } from './components/Tablas/Form/CreateCuadros'
 import { UpdateCuadros } from './components/Tablas/Form/UpdateCuadros'
+import { GraphSubasta } from './components/Subasta/GraphSubasta'
 
 const rutas = createBrowserRouter([
   
@@ -92,6 +93,10 @@ const rutas = createBrowserRouter([
             <Pago />
           </RoleRoute>
         )
+      },
+      {
+        path: '/subasta/graph',
+        element: <GraphSubasta />,
       },
     ]
   }

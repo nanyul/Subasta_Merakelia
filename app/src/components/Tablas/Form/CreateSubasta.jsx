@@ -18,15 +18,13 @@ import { Save, ArrowLeft, ShieldCheck, UserRound } from "lucide-react";
 // servicios
 import SubastaService from "../../../services/SubastaService";
 import CuadrosService from "../../../services/CuadrosService";
-import UserService from "../../../services/UserService";
+import { useUser } from "@/hooks/useUser";
 
 // componentes reutilizables
 import { CustomSelect } from "../../ui/custom/custom-select";
 import { CustomInputField } from "../../ui/custom/custom-input-field";
 import fondoTabla from "@/assets/fondoTabla.png";
 
-// Usuario vendedor simulado (variable lógica simulada)
-const ID_USUARIO_VENDEDOR = 10; // única variable simulada
 const ESTADO_CUADRO_ACTIVO = "Publicado";
 
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
@@ -46,28 +44,13 @@ const extractArrayFromResponse = (response) => {
     return [];
 };
 
-const extractObjectFromResponse = (response) => {
-    const payload = response?.data;
-
-    if (payload && typeof payload === "object" && !Array.isArray(payload)) {
-        if (payload.data && typeof payload.data === "object") return payload.data;
-        return payload;
-    }
-
-    if (Array.isArray(payload) && payload.length > 0) {
-        return payload[0];
-    }
-
-    return null;
-};
-
 const toMySqlDateTime = (value) => {
     if (!value) return "";
     return format(new Date(value), "yyyy-MM-dd HH:mm:ss");
 };
 
 export function CreateSubasta() {
-    const [usuarioVendedor, setUsuarioVendedor] = useState(null);
+    const { user: authUser, isAuthenticated } = useUser();
     const navigate = useNavigate();
 
     /*** Estados ***/
@@ -77,45 +60,48 @@ export function CreateSubasta() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingData, setIsLoadingData] = useState(true);
 
-    const objetosConSubastaActivaPorNombre = useMemo(() => {
-        return new Set(
-            subastasActivas
-                .map((subasta) => normalizeText(subasta.objeto))
-                .filter(Boolean)
-        );
-    }, [subastasActivas]);
-
+    // Set de ids de cuadros que ya tienen subasta activa o programada
     const cuadrosConSubastaActiva = useMemo(() => {
         return new Set(
             subastasActivas
-                .filter((subasta) => !subasta.estado || subasta.estado === "Activa" || subasta.estado === "Programada")
-                .map((subasta) => Number(subasta.id_cuadro || subasta.idCuadro || subasta.id_cuadro_subasta || subasta.id_cuadro_fk || 0))
+                .filter(
+                    (subasta) =>
+                        !subasta.estado ||
+                        subasta.estado === "Activa" ||
+                        subasta.estado === "Programada"
+                )
+                .map((subasta) =>
+                    Number(
+                        subasta.id_cuadro ||
+                        subasta.idCuadro ||
+                        subasta.id_cuadro_subasta ||
+                        subasta.id_cuadro_fk ||
+                        0
+                    )
+                )
                 .filter(Boolean)
         );
     }, [subastasActivas]);
 
+    // Filtra solo cuadros del usuario logueado, publicados y sin subasta activa
     const objetosDisponibles = useMemo(() => {
-        const vendedorNombre = normalizeText(usuarioVendedor?.nombre);
+        const vendedorId = Number(authUser?.id || 0);
 
         return dataCuadros.filter((cuadro) => {
             const idCuadro = Number(cuadro.id);
-            const nombreCuadro = normalizeText(cuadro.nombre);
             const estadoCuadro = normalizeText(cuadro.estado_cuadro);
-            const nombreDuenoCuadro = normalizeText(cuadro.nombre_dueno);
+            const idUsuarioCuadro = Number(cuadro.id_usuario || 0);
 
-            // Si no hay usuario cargado, no bloquea por dueño para evitar ocultar opciones válidas.
-            const coincideVendedor = vendedorNombre
-                ? nombreDuenoCuadro === vendedorNombre
-                : true;
+            // Verificación clave: el cuadro debe pertenecer al usuario autenticado
+            const esDelUsuario = vendedorId > 0 && idUsuarioCuadro === vendedorId;
 
             return (
                 estadoCuadro === normalizeText(ESTADO_CUADRO_ACTIVO) &&
-                coincideVendedor &&
-                !cuadrosConSubastaActiva.has(idCuadro) &&
-                !objetosConSubastaActivaPorNombre.has(nombreCuadro)
+                esDelUsuario &&
+                !cuadrosConSubastaActiva.has(idCuadro)
             );
         });
-    }, [dataCuadros, cuadrosConSubastaActiva, objetosConSubastaActivaPorNombre, usuarioVendedor]);
+    }, [dataCuadros, cuadrosConSubastaActiva, authUser]);
 
     /*** Esquema de validación Yup ***/
     const subastaSchema = yup.object({
@@ -168,28 +154,32 @@ export function CreateSubasta() {
     });
 
     const fechaInicio = watch("fecha_inicio");
-    // Fecha actual en formato correcto para datetime-local
     const now = new Date().toISOString().slice(0, 16);
 
-    /*** Cargar objetos activos ***/
+    /*** Cargar cuadros y subastas ***/
     useEffect(() => {
         const fetchData = async () => {
             try {
                 setIsLoadingData(true);
-                const [cuadrosRes, activisRes, programadasRes, usuarioRes] = await Promise.all([
+
+                if (!isAuthenticated || !authUser?.id) {
+                    setDataCuadros([]);
+                    setSubastasActivas([]);
+                    setError("Debe iniciar sesión para crear una subasta.");
+                    return;
+                }
+
+                const [cuadrosRes, activasRes, programadasRes] = await Promise.all([
                     CuadrosService.getCuadros(),
                     SubastaService.getSubastasActivas(),
                     SubastaService.getProgramadas(),
-                    UserService.getUserById(ID_USUARIO_VENDEDOR),
                 ]);
 
                 setDataCuadros(extractArrayFromResponse(cuadrosRes));
-                const activas = extractArrayFromResponse(activisRes);
+
+                const activas = extractArrayFromResponse(activasRes);
                 const programadas = extractArrayFromResponse(programadasRes);
                 setSubastasActivas([...activas, ...programadas]);
-                
-                const userData = extractObjectFromResponse(usuarioRes);
-                setUsuarioVendedor(userData);
 
                 setError("");
             } catch (err) {
@@ -198,33 +188,33 @@ export function CreateSubasta() {
                 setIsLoadingData(false);
             }
         };
-        fetchData();
-    }, []);
 
-    /*** Submit - crea subasta asociada al vendedor simulado ***/
+        fetchData();
+    }, [authUser?.id, isAuthenticated]);
+
+    /*** Submit ***/
     const onSubmit = async (dataForm) => {
         try {
             setIsSubmitting(true);
 
-            const idCuadro = Number(dataForm.id_cuadro);
-            const cuadroSeleccionado = dataCuadros.find((cuadro) => Number(cuadro.id) === idCuadro);
-
-            if (!cuadroSeleccionado) {
-                toast.error("Debe seleccionar un objeto válido.");
+            if (!authUser?.id) {
+                toast.error("Debe iniciar sesión para crear una subasta.");
                 return;
             }
 
-            if (cuadroSeleccionado.estado_cuadro !== ESTADO_CUADRO_ACTIVO) {
-                toast.error("El objeto seleccionado no está activo.");
+            const idCuadro = Number(dataForm.id_cuadro);
+
+            // Verificación extra: el cuadro seleccionado debe pertenecer al usuario logueado
+            const cuadroSeleccionado = objetosDisponibles.find(
+                (cuadro) => Number(cuadro.id) === idCuadro
+            );
+
+            if (!cuadroSeleccionado) {
+                toast.error("El objeto seleccionado no es válido o no le pertenece.");
                 return;
             }
 
             if (cuadrosConSubastaActiva.has(idCuadro)) {
-                toast.error("El objeto ya tiene una subasta activa.");
-                return;
-            }
-
-            if (objetosConSubastaActivaPorNombre.has(normalizeText(cuadroSeleccionado.nombre))) {
                 toast.error("El objeto ya tiene una subasta activa.");
                 return;
             }
@@ -238,7 +228,8 @@ export function CreateSubasta() {
                 descripcion: `Subasta de la obra ${cuadroSeleccionado.nombre}.`,
                 es_publica: 1,
                 id_estado_subasta: 4,
-                id_usuario: ID_USUARIO_VENDEDOR,
+                // id_usuario siempre del usuario autenticado, nunca editable
+                id_usuario: Number(authUser.id),
             };
 
             const response = await SubastaService.createSubasta(payload);
@@ -278,7 +269,7 @@ export function CreateSubasta() {
                     Crear Subasta
                 </h2>
                 <p className="mb-6 text-sm text-[#d6d9f6]">
-                    Configure la subasta con un objeto activo disponible y asocie automáticamente al vendedor.
+                    Configure la subasta con un objeto activo disponible asociado a su cuenta.
                 </p>
 
                 {error && (
@@ -295,14 +286,18 @@ export function CreateSubasta() {
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
-                    {/* Usuario vendedor (no editable) */}
+                    {/*Usuario vendedor — datos del authUser directamente, sin estado extra */}
                     <div className="rounded-lg border border-[#6FB8E6]/45 bg-[#194174]/35 px-4 py-3">
                         <Label className="mb-2 flex items-center gap-2 text-sm font-medium text-[#BEE7FF]">
                             <UserRound className="h-4 w-4" />
-                            Usuario vendedor asignado
+                            Usuario vendedor
                         </Label>
-                        <p className="text-sm font-semibold text-white">{usuarioVendedor?.nombre}</p>
-                        <p className="text-xs text-[#d6d9f6]">{usuarioVendedor?.correo}</p>
+                        <p className="text-sm font-semibold text-white">
+                            {authUser?.nombre || authUser?.correo || "Sin sesión"}
+                        </p>
+                        <p className="text-xs text-[#d6d9f6]">
+                            {authUser?.correo}
+                        </p>
                         <p className="mt-2 flex items-center gap-2 text-xs text-[#F2E199]">
                             <ShieldCheck className="h-3.5 w-3.5" />
                             Asociación automática, campo no editable.
@@ -311,7 +306,9 @@ export function CreateSubasta() {
 
                     {/* Objeto */}
                     <div>
-                        <Label className="mb-1 block text-sm font-medium text-[#F2E199]">Objeto a subastar</Label>
+                        <Label className="mb-1 block text-sm font-medium text-[#F2E199]">
+                            Objeto a subastar
+                        </Label>
                         <Controller
                             name="id_cuadro"
                             control={control}
@@ -327,7 +324,7 @@ export function CreateSubasta() {
                             )}
                         />
                         <p className="mt-2 text-xs text-[#d6d9f6]">
-                            Solo se muestran objetos activos y sin subasta activa.
+                            Solo se muestran sus objetos activos y sin subasta activa.
                         </p>
                     </div>
 
