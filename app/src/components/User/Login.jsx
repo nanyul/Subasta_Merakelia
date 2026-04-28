@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -5,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useUser } from "@/hooks/useUser";
 import UserService from "@/services/UserService";
+import { Eye, EyeOff } from "lucide-react";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,7 @@ const schema = yup.object({
 export default function Login() {
     const { saveUser } = useUser();
     const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
 
     const {
         register,
@@ -66,13 +69,23 @@ export default function Login() {
                             <Label htmlFor="contrasena" className="text-white">
                                 Contraseña
                             </Label>
-                            <Input
-                                id="contrasena"
-                                type="password"
-                                placeholder="********"
-                                {...register("contrasena")}
-                                className="bg-white text-white placeholder:text-gray-400 border border-gray-300 "
-                            />
+                            <div className="relative">
+                                <Input
+                                    id="contrasena"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="********"
+                                    {...register("contrasena")}
+                                    className="bg-white text-white placeholder:text-gray-400 border border-gray-300 pr-16"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 rounded-md bg-white/10 p-1 text-accent border border-accent hover:border-accent/90"
+                                    aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
+                                >
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
                             {errors.contrasena && (
                                 <p className="text-red-400 text-sm mt-1">{errors.contrasena.message}</p>
                             )}

@@ -39,12 +39,13 @@ export default function Header() {
   const { isAuthenticated, clearUser, user, authorize } = useUser();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cantidadPendiente, setCantidadPendiente] = useState(0);
-  const userEmail = isAuthenticated && user ? user.correo : "Invitado";
+  const userEmail = isAuthenticated && user ? user.nombre : "Invitado";
   const isAdmin = authorize(["administrador"]);
   const isVendedor = authorize(["vendedor"]);
   const isComprador = authorize(["comprador"]);
   const canViewMantenimientos = isAdmin || isVendedor;
   const canViewPagos = isAdmin || isComprador;
+  const canViewGraficos = isAdmin;
   const myUserDetailPath = user?.id ? `/user/${user.id}` : null;
 
   // Obtener cantidad de pagos pendientes desde la API
@@ -124,7 +125,7 @@ export default function Header() {
       title: "Gráficos",
       href: "/subasta/graph",
       icon: <BarChart3 className="h-4 w-4" />,
-      show: canViewMantenimientos,
+      show: canViewGraficos,
     }
   ].filter((item) => item.show);
 

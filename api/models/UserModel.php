@@ -162,6 +162,7 @@ class UserModel
 					// Datos para el token JWT
 					$data = [
 						'id' => $usuario->id,
+						'nombre' => $usuario->nombre,
 						'correo' => $usuario->correo,
 						'rol' => $usuario->rol,
 						'iat' => time(),

@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useAblySubasta } from "@/hooks/useAblySubasta";
+import { useUser } from "@/hooks/useUser";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +19,6 @@ import { EmptyState } from "@/components/ui/custom/EmptyState";
 import { ArrowLeft, Gavel, User, DollarSign, Clock, TrendingUp, Trophy, Medal, Crown, AlertCircle, CheckCircle, XCircle, RefreshCw, Zap, CalendarDays, ImageIcon, Package, ScrollText } from "lucide-react";
 import fondoTabla from "@/assets/fondoTabla.png";
 import SubastaService from "@/services/SubastaService";
-import UserService from "@/services/UserService";
 
 function parseFechaLocal(value) {
     if (!value) return null;
@@ -42,16 +42,6 @@ function subastaEstaActiva(data) {
     if (estadoId === 1) return true;
     if (estadoTexto.includes("activa") || estadoTexto.includes("en vivo")) return true;
     return false;
-}
-
-function esUsuarioComprador(u) {
-    if (!u) return false;
-    const rol    = String(u.rol ?? u.descripcion_rol ?? u.tipo_rol ?? "").trim().toLowerCase();
-    const estado = String(u.estado ?? "").trim().toLowerCase();
-    const idRol  = Number(u.id_rol);
-    return (idRol === 1 || rol.includes("comprador") || rol.includes("cliente"))
-        && !rol.includes("vendedor")
-        && (!estado || estado === "activo" || estado === "1");
 }
 
 function extractArray(response) {
@@ -160,8 +150,7 @@ export function SubastaEnVivo() {
     const [loading,        setLoading]        = useState(true);
     const [error,          setError]          = useState(null);
 
-    const [compradores,     setCompradores]     = useState([]);
-    const [selectedBuyerId, setSelectedBuyerId] = useState("");
+    const { user, isAuthenticated } = useUser();
 
     const [montoPuja,    setMontoPuja]    = useState("");
     const [enviando,     setEnviando]     = useState(false);
@@ -207,11 +196,7 @@ export function SubastaEnVivo() {
         setNotificacion(null);
     }, []);
 
-    const compradoresDisponibles = useMemo(() => compradores.filter(esUsuarioComprador), [compradores]);
-    const compradorSeleccionado  = useMemo(
-        () => compradoresDisponibles.find((u) => String(u.id) === String(selectedBuyerId)) ?? null,
-        [compradoresDisponibles, selectedBuyerId]
-    );
+    const compradorSeleccionado = useMemo(() => (isAuthenticated ? user : null), [isAuthenticated, user]);
 
     // Mantener la ref sincronizada para que handleNuevaPuja siempre
     // vea el comprador actual sin necesitar estar en sus dependencias
@@ -238,25 +223,6 @@ export function SubastaEnVivo() {
             if (mostrarLoader) setLoading(false);
         }
     }, [id]);
-
-    // Carga compradores
-    useEffect(() => {
-        let cancelled = false;
-        UserService.getUsers().then((res) => {
-            if (cancelled) return;
-            const lista = extractArray(res);
-            setCompradores(lista);
-        }).catch(() => { if (!cancelled) setCompradores([]); });
-        return () => { cancelled = true; };
-    }, []);
-
-    // Seleccionar comprador aleatorio al cargar disponibles
-    useEffect(() => {
-        if (compradoresDisponibles.length > 0 && !selectedBuyerId) {
-            const indiceAleatorio = Math.floor(Math.random() * compradoresDisponibles.length);
-            setSelectedBuyerId(String(compradoresDisponibles[indiceAleatorio].id));
-        }
-    }, [compradoresDisponibles, selectedBuyerId]);
 
     // Carga inicial
     useEffect(() => { cargarSubasta(true); }, [id]); 
@@ -364,17 +330,6 @@ export function SubastaEnVivo() {
         // TODO: Aquí iría la lógica para guardar que el usuario pospondrá el pago
     }, [mostrarNotificacion]);
 
-    const seleccionarCompradorAleatorio = useCallback(() => {
-        if (compradoresDisponibles.length === 0) {
-            mostrarNotificacion("No hay compradores disponibles.", "error");
-            return;
-        }
-        const indiceAleatorio = Math.floor(Math.random() * compradoresDisponibles.length);
-        const compradorAleatorio = compradoresDisponibles[indiceAleatorio];
-        setSelectedBuyerId(String(compradorAleatorio.id));
-        mostrarNotificacion(`Comprador seleccionado: ${compradorAleatorio.nombre}`, "info");
-    }, [compradoresDisponibles, mostrarNotificacion]);
-
     const handleSubastaCerrada = useCallback((data) => {
         setSubastaCerrada(true);
         setSubasta((prev) => prev ? { ...prev, estado: "Finalizada", id_estado_subasta: 2 } : prev);
@@ -432,7 +387,12 @@ export function SubastaEnVivo() {
             return;
         }
         if (!compradorSeleccionado) {
-            mostrarNotificacion("Seleccioná un comprador.", "error");
+            mostrarNotificacion("Iniciá sesión para pujar.", "error");
+            return;
+        }
+        const rolTexto = String(compradorSeleccionado?.rol?.descripcion ?? compradorSeleccionado?.rol ?? "").trim().toLowerCase();
+        if (rolTexto.includes("vendedor")) {
+            mostrarNotificacion("Los vendedores no pueden pujar.", "error");
             return;
         }
         setEnviando(true);
@@ -461,8 +421,10 @@ export function SubastaEnVivo() {
 
     const esActiva   = subasta ? subastaEstaActiva(subasta) && !subastaCerrada : false;
     const esProgramada = !!subasta && !esActiva && String(subasta.estado ?? "").trim().toLowerCase() === "activa";
+    const rolTexto = String(compradorSeleccionado?.rol?.descripcion ?? compradorSeleccionado?.rol ?? "").trim().toLowerCase();
+    const esRolVendedor = rolTexto.includes("vendedor");
     const esVendedor = !!compradorSeleccionado && Number(compradorSeleccionado.id) === Number(subasta?.id_vendedor);
-    const puedePujar = esActiva && !esVendedor && !!compradorSeleccionado;
+    const puedePujar = esActiva && !esVendedor && !esRolVendedor && !!compradorSeleccionado;
 
     const getRankIcon = (pos) => {
         if (pos === 1) return <Trophy className="h-4 w-4 text-[#ECB44D]" />;
@@ -598,13 +560,6 @@ export function SubastaEnVivo() {
                             <CardContent className="p-4 space-y-3">
                                 <div>
                                     <div className="text-sm text-[#6FB8E6] mb-3">Comprador para pujar</div>
-                                    <Button 
-                                        onClick={seleccionarCompradorAleatorio}
-                                        className="w-full bg-[#6FB8E6] text-[#171741] hover:bg-[#6FB8E6]/80 font-semibold mb-3"
-                                    >
-                                        <RefreshCw className="h-4 w-4 mr-2" />
-                                        Seleccionar comprador aleatorio
-                                    </Button>
                                     {compradorSeleccionado && (
                                         <div className="rounded-lg border border-[#ECB44D]/50 bg-[#194174]/30 p-3">
                                             <p className="text-xs text-[#6FB8E6] mb-1">Comprador seleccionado:</p>
@@ -623,13 +578,13 @@ export function SubastaEnVivo() {
                                             : "Esta subasta no está activa, no se pueden registrar pujas."}
                                     </div>
                                 )}
-                                {esVendedor && esActiva && (
+                                {(esVendedor || esRolVendedor) && esActiva && (
                                     <div className="rounded-md border border-[#6FB8E6]/40 bg-[#194174]/30 p-2 text-xs text-[#6FB8E6]">
-                                        El vendedor no puede pujar en su propia subasta.
+                                        El vendedor no puede pujar.
                                     </div>
                                 )}
 
-                                {!esVendedor && esActiva && (
+                                {!esVendedor && !esRolVendedor && esActiva && (
                                     <div>
                                         <Label className="text-[#F2E199] mb-2 block">Monto de tu puja</Label>
                                         <div className="flex gap-2">
