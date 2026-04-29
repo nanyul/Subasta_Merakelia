@@ -80,6 +80,7 @@ export default function TableSubastas() {
         return noHaIniciado || sinPujas;
     };
 
+
     const fetchSubastas = async () => {
         try {
             setLoading(true);
@@ -153,10 +154,13 @@ export default function TableSubastas() {
     };
 
     const subastasFiltradas = subastas.filter((s) => {
-        if (filtro === "borradores") return s.estado === "Programada";
-        if (filtro === "activas") return !s.estado || s.estado === "Activa";
-        if (filtro === "finalizadas") return s.estado === "Finalizada";
-        if (filtro === "canceladas") return s.estado === "Cancelada";
+        const estado = s.estado ?? "";
+
+        if (filtro === "borradores") return estado === "Programada";
+        if (filtro === "activas") return !estado || estado === "Activa";
+        if (filtro === "finalizadas") return estado === "Finalizada";
+        if (filtro === "canceladas") return estado === "Cancelada";
+        if (filtro === "pendientesPago") return estado === "Pendiente";
         return true;
     });
 
@@ -251,6 +255,17 @@ export default function TableSubastas() {
                                 onClick={() => setFiltro("canceladas")}
                             >
                                 Canceladas
+                            </Badge>
+
+                            <Badge
+                                className={`cursor-pointer px-4 py-1 border transition-all rounded-full text-sm
+                                ${filtro === "pendientesPago"
+                                        ? "bg-[#6FB8E6] text-[#171741] border-[#6FB8E6]"
+                                        : "bg-transparent text-[#F2E199] border-[#F2E199] hover:bg-[#6FB8E6]/20 hover:border-[#6FB8E6]"
+                                    }`}
+                                onClick={() => setFiltro("pendientesPago")}
+                            >
+                                Pend.pago
                             </Badge>
                         </div>
 
@@ -354,7 +369,6 @@ export default function TableSubastas() {
                                         </TableCell>
 
                                         <TableCell className="border-r border-b border-[#ECB44D]/35 text-center font-semibold">
-
                                             {(!subasta.estado || subasta.estado === "Activa") && (
                                                 <span className="text-[#6FB8E6]">
                                                     Activa
@@ -376,6 +390,18 @@ export default function TableSubastas() {
                                             {subasta.estado === "Cancelada" && (
                                                 <span className="text-[#F2E199]">
                                                     Cancelada
+                                                </span>
+                                            )}
+
+                                            {subasta.estado === "Pendiente" && (
+                                                <span className="text-[#6FB8E6]">
+                                                    Pendiente
+                                                </span>
+                                            )}
+
+                                            {!subasta.estado && (
+                                                <span className="text-[#F2E199]">
+                                                    —
                                                 </span>
                                             )}
 

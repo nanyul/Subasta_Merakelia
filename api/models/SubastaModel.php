@@ -15,8 +15,9 @@ class SubastaModel
         $programadas = $this->getProgramadas();
         $activas = $this->getActivas();
         $finalizadas = $this->getFinalizadas();
+        $pendientesPago = $this->getPendientesPago();
 
-        return array_merge($programadas, $activas, $finalizadas);
+        return array_merge($programadas, $activas, $finalizadas, $pendientesPago);
     }
 
     
@@ -525,7 +526,7 @@ public function getPendientesPago()
 
                 $sqlEstado = "SELECT descripcion FROM estado_subasta WHERE id = $subasta->id_estado_subasta;";
                 $estado = $this->enlace->ExecuteSQL($sqlEstado);
-                $subasta->estado = ( is_array($estado) && count($estado) > 0) ? $estado[0]->descripcion : null;
+                $subasta->estado = ( is_array($estado) && count($estado) > 0) ? $estado[0]->descripcion : 'Pendiente de pago';
 
                 $subasta->cantidad_pujas = $this->CantidadPujas($subasta->id);
 
