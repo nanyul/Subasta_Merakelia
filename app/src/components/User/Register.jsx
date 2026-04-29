@@ -14,7 +14,6 @@ const schema = yup.object({
     nombre: yup.string().required("El nombre es obligatorio"),
     correo: yup.string().email("Correo inválido").required("El correo es obligatorio"),
     password: yup.string().min(6, "Mínimo 6 caracteres").required("La contraseña es obligatoria"),
-    id_rol: yup.number().required('El rol es requerido'),
 });
 
 export default function Register() {
@@ -30,7 +29,6 @@ export default function Register() {
             nombre: '',
             correo: '',
             password: '',
-            id_rol: 2,
         },
         resolver: yupResolver(schema)
     });
@@ -42,13 +40,13 @@ export default function Register() {
                 nombre: data.nombre,
                 correo: data.correo,
                 contrasena: data.password,
-                id_rol: data.id_rol
+                id_rol: 2
             };
             
             const response = await UserService.createUser(userData);
             if (response?.data?.success) {
                 toast.success("Usuario creado correctamente");
-                navigate("/login");
+                navigate("/user/login");
             } else {
                 toast.error("No se pudo crear el usuario");
             }
@@ -104,6 +102,13 @@ export default function Register() {
                             )}
                         </div>
 
+                        <div>
+                            <Label>Rol</Label>
+                            <div className="mt-1 rounded-md border border-white/30 bg-white/10 px-3 py-2 text-sm text-white/80">
+                                Comprador
+                            </div>
+                        </div>
+
                         <Button
                             type="submit"
                             disabled={isSubmitting}
@@ -114,7 +119,7 @@ export default function Register() {
 
                         <p className="text-sm text-center mt-4">
                             ¿Ya tienes cuenta?{" "}
-                            <a href="/login" className="text-accent underline hover:text-accent/80">
+                            <a href="/user/login" className="text-accent underline hover:text-accent/80">
                                 Inicia sesión
                             </a>
                         </p>

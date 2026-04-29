@@ -100,7 +100,7 @@ export default function Login() {
 
                         <p className="text-sm text-center mt-4 text-gray-300">
                             ¿No tienes cuenta?{" "}
-                            <a href="/register" className="text-accent underline hover:text-accent/80">
+                            <a href="/user/register" className="text-accent underline hover:text-accent/80">
                                 Regístrate
                             </a>
                         </p>
