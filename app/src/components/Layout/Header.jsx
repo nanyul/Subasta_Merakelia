@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import {
@@ -46,6 +46,10 @@ export default function Header() {
   const canViewPagos = isAdmin || isComprador;
   const canViewGraficos = isAdmin;
   const myUserDetailPath = user?.id ? `/user/${user.id}` : null;
+  const userId = useMemo(() => {
+    if (!user) return null;
+    return user.id ?? user.id_usuario ?? user.userId ?? user.idUser ?? null;
+  }, [user]);
 
   // Obtener cantidad de pagos pendientes desde la API
   const cargarPendientes = useCallback(async () => {
@@ -53,9 +57,17 @@ export default function Header() {
 
     try {
       const res = await SubastaService.getSubastasPendientesPago();
-      
-      if (res.data?.data && Array.isArray(res.data.data)) {
-        setCantidadPendiente(res.data.data.length);
+      const data = res.data?.data;
+
+      if (Array.isArray(data)) {
+        const filtradas = userId
+          ? data.filter((subasta) => {
+              const ganadorId = subasta?.puja_maxima?.id_usuario ?? subasta?.puja_maxima?.id ?? null;
+              return ganadorId !== null && String(ganadorId) === String(userId);
+            })
+          : [];
+
+        setCantidadPendiente(filtradas.length);
       } else {
         setCantidadPendiente(0);
       }
@@ -63,7 +75,7 @@ export default function Header() {
       console.error("Error al cargar pagos pendientes:", error);
       setCantidadPendiente(0);
     }
-  }, [canViewPagos]);
+  }, [canViewPagos, userId]);
 
   useEffect(() => {
     cargarPendientes();
