@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@/hooks/useUser";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, DollarSign, Clock, AlertCircle, ChevronRight, User } from "lucide-react";
@@ -24,10 +25,16 @@ function formatDate(d) {
 
 export function PagoPendiente() {
     const navigate = useNavigate();
+    const { user } = useUser();
     const [subastas, setSubastas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const BASE_URL = import.meta.env.VITE_BASE_URL + "uploads";
+
+    const userId = useMemo(() => {
+        if (!user) return null;
+        return user.id ?? user.id_usuario ?? user.userId ?? user.idUser ?? null;
+    }, [user]);
 
     useEffect(() => {
         cargarSubastasPendientes();
@@ -40,8 +47,15 @@ export function PagoPendiente() {
             const data = res.data?.data ?? res.data ?? [];
             
             if (Array.isArray(data)) {
-                setSubastas(data);
-                if (data.length === 0) {
+                const filtradas = userId
+                    ? data.filter((subasta) => {
+                        const ganadorId = subasta?.puja_maxima?.id_usuario ?? subasta?.puja_maxima?.id ?? null;
+                        return ganadorId !== null && String(ganadorId) === String(userId);
+                    })
+                    : [];
+
+                setSubastas(filtradas);
+                if (filtradas.length === 0) {
                     setError("No hay pagos pendientes");
                 }
             } else {
