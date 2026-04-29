@@ -17,7 +17,7 @@ import { Save, ArrowLeft, X, ShieldCheck, UserRound } from "lucide-react";
 import CuadrosService from "../../../services/CuadrosService";
 import CategoriasService from "../../../services/CategoriasService";
 import ImageService from "../../../services/ImageService";
-import UserService from "../../../services/UserService";
+import { useUser } from "@/hooks/useUser";
 
 // componentes reutilizables
 import { CustomInputField } from "../../ui/custom/custom-input-field";
@@ -28,18 +28,6 @@ const CONDICIONES = [
     { id: 1, descripcion: "Nuevo" },
     { id: 2, descripcion: "Usado" },
 ];
-
-// Función para seleccionar un usuario vendedor random
-const getRandomVendedor = (usuarios) => {
-    const vendedores = usuarios.filter((user) => {
-        const esVendedorPorId = Number(user.id_rol) === 2;
-        const esVendedorPorDescripcion = user.rol && user.rol.toLowerCase().includes("vendedor");
-        return esVendedorPorId || esVendedorPorDescripcion;
-    });
-
-    if (vendedores.length === 0) return null;
-    return vendedores[Math.floor(Math.random() * vendedores.length)];
-};
 
 
 
@@ -59,7 +47,7 @@ const extractArrayFromResponse = (response) => {
 };
 
 export function CreateCuadros() {
-    const [usuarioVendedor, setUsuarioVendedor] = useState(null);
+    const { user: authUser } = useUser();
     const navigate = useNavigate();
 
     /*** Estados ***/
@@ -120,7 +108,7 @@ export function CreateCuadros() {
         resolver: yupResolver(cuadroSchema),
     });
 
-    /*** Cargar categorías y usuario vendedor random ***/
+    /*** Cargar categorías ***/
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -133,23 +121,6 @@ export function CreateCuadros() {
                 } catch (err) {
                     console.error("Error al cargar categorías:", err);
                     setDataCategorias([]);
-                }
-
-                // Cargar usuarios y seleccionar un vendedor random
-                try {
-                    const usuariosRes = await UserService.getUsers();
-                    const usuarios = extractArrayFromResponse(usuariosRes);
-
-                    const vendedorRandom = getRandomVendedor(usuarios);
-
-                    if (vendedorRandom) {
-                        setUsuarioVendedor(vendedorRandom);
-                    } else {
-                        setUsuarioVendedor(null);
-                    }
-                } catch (err) {
-                    console.error("Error al cargar usuarios:", err);
-                    setUsuarioVendedor(null);
                 }
 
                 setError("");
@@ -232,7 +203,7 @@ export function CreateCuadros() {
                 procedencia: dataForm.procedencia?.trim() || "",
                 certificado_autenticidad: dataForm.certificado_autenticidad ? 1 : 0,
                 id_estado_cuadro: 1, // Estado activo por defecto
-                id_usuario: usuarioVendedor.id,
+                id_usuario: authUser.id,
                 categorias: categoriasSeleccionadas,
             };
 
@@ -307,19 +278,17 @@ export function CreateCuadros() {
                             <UserRound className="h-4 w-4" />
                             Usuario vendedor asignado
                         </Label>
-                        {isLoadingData ? (
-                            <p className="text-sm text-[#6FB8E6]">Cargando usuario vendedor...</p>
-                        ) : usuarioVendedor ? (
+                        {authUser ? (
                             <>
-                                <p className="text-sm font-semibold text-white">{usuarioVendedor.nombre || usuarioVendedor.name || "Nombre no disponible"}</p>
-                                <p className="text-xs text-[#6FB8E6]">{usuarioVendedor.correo || usuarioVendedor.email || "Email no disponible"}</p>
+                                <p className="text-sm font-semibold text-white">{authUser.nombre || authUser.name || "Nombre no disponible"}</p>
+                                <p className="text-xs text-[#6FB8E6]">{authUser.correo || authUser.email || "Email no disponible"}</p>
                             </>
                         ) : (
-                            <p className="text-sm text-orange-300">No hay usuarios vendedores disponibles</p>
+                            <p className="text-sm text-orange-300">Usuario no autenticado</p>
                         )}
                         <p className="mt-2 flex items-center gap-2 text-xs text-[#F2E199]">
                             <ShieldCheck className="h-3.5 w-3.5" />
-                            Vendedor seleccionado al azar, campo no editable.
+                            Tu usuario como vendedor, campo no editable.
                         </p>
                     </div>
 
