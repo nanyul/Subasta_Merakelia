@@ -4,7 +4,6 @@ import { useUser } from "@/hooks/useUser";
 import {
   Layers,
   Film,
-  Filter,
   Wrench,
   LogIn,
   UserPlus,
@@ -83,24 +82,6 @@ export default function Header() {
       navigate("/pago-pendiente");
     }
   };
-
-  const subasItems = [
-    { title: "Subastas", href: "/subasta/activas", icon: <Film className="h-4 w-4" /> },
-    {
-      title: "Filtrar Subastas",
-      href: "/subastas/filter",
-      icon: <Filter className="h-4 w-4" />,
-    },
-  ];
-
-  const cuadroItems = [
-    { title: "Cuadros Subastables", href: "/CuadrosSubastables/galeria", icon: <Film className="h-4 w-4" /> },
-    {
-      title: "Filtrar Cuadros",
-      href: "/CuadrosSubastables/filter",
-      icon: <Filter className="h-4 w-4" />,
-    },
-  ];
 
   const mantItems = [
     {
@@ -181,16 +162,14 @@ export default function Header() {
                 <ChevronDown className="h-3 w-3" />
               </MenubarTrigger>
               <MenubarContent className="bg-primary/0 backdrop-blur-md border-white/10">
-                {subasItems.map((item) => (
-                  <MenubarItem key={item.href} asChild>
-                    <Link
-                      to={item.href}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199]"
-                    >
-                      {item.icon} {item.title}
-                    </Link>
-                  </MenubarItem>
-                ))}
+                <MenubarItem asChild>
+                  <Link
+                    to="/subasta/activas"
+                    className="flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199]"
+                  >
+                    <Film className="h-4 w-4" /> Subastas
+                  </Link>
+                </MenubarItem>
               </MenubarContent>
             </MenubarMenu>
 
@@ -204,16 +183,14 @@ export default function Header() {
                 <ChevronDown className="h-3 w-3" />
               </MenubarTrigger>
               <MenubarContent className="bg-primary/0 backdrop-blur-md border-white/10">
-                {cuadroItems.map((item) => (
-                  <MenubarItem key={item.href} asChild>
-                    <Link
-                      to={item.href}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199]"
-                    >
-                      {item.icon} {item.title}
-                    </Link>
-                  </MenubarItem>
-                ))}
+                <MenubarItem asChild>
+                  <Link
+                    to="/CuadrosSubastables/galeria"
+                    className="flex items-center gap-2 py-2 px-3 rounded-md text-sm transition hover:bg-[#194174] focus:bg-[#194174] active:bg-[#194174] hover:text-[#F2E199] focus:text-[#F2E199] active:text-[#F2E199]"
+                  >
+                    <Film className="h-4 w-4" /> Cuadros Subastables
+                  </Link>
+                </MenubarItem>
               </MenubarContent>
             </MenubarMenu>
 
@@ -321,16 +298,26 @@ export default function Header() {
                   <h4 className="mb-2 text-lg font-semibold flex items-center gap-2">
                     <Film /> Películas
                   </h4>
-                  {subasItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-2 py-2 px-3 rounded-md text-[#F2E199] hover:bg-white/10 transition"
-                    >
-                      {item.icon} {item.title}
-                    </Link>
-                  ))}
+                  <Link
+                    to="/subasta/activas"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2 py-2 px-3 rounded-md text-[#F2E199] hover:bg-white/10 transition"
+                  >
+                    <Film className="h-4 w-4" /> Subastas
+                  </Link>
+                </div>
+
+                <div>
+                  <h4 className="mb-2 text-lg font-semibold flex items-center gap-2">
+                    <Palette /> Cuadros
+                  </h4>
+                  <Link
+                    to="/CuadrosSubastables/galeria"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2 py-2 px-3 rounded-md text-[#F2E199] hover:bg-white/10 transition"
+                  >
+                    <Film className="h-4 w-4" /> Cuadros Subastables
+                  </Link>
                 </div>
 
                 {mantItems.length > 0 && (
