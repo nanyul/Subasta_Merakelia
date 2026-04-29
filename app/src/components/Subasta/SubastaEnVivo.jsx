@@ -110,7 +110,7 @@ function Toaster({ notificacion, onClose }) {
                             {accion.label}
                         </Button>
                     ))}
-                    {!tieneAcciones && (
+                    {!tieneAcciones && notificacion.mostrarCancelar !== false && (
                         <Button
                             onClick={onClose}
                             className="bg-[#194174]/60 border border-[#6FB8E6] text-[#6FB8E6] hover:bg-[#194174]"
@@ -129,6 +129,7 @@ Toaster.propTypes = {
     notificacion: PropTypes.shape({ 
         mensaje: PropTypes.string, 
         tipo: PropTypes.string,
+        mostrarCancelar: PropTypes.bool,
         acciones: PropTypes.arrayOf(PropTypes.shape({
             label: PropTypes.string,
             onClick: PropTypes.func,
@@ -169,13 +170,14 @@ export function SubastaEnVivo() {
     });
 
     const mostrarNotificacion = useCallback((mensaje, tipo = "info", acciones = null) => {
-        let mensajeSeguro, tipoSeguro, accionesSeguro;
-        
+        let mensajeSeguro, tipoSeguro, accionesSeguro, mostrarCancelarSeguro;
+
         if (typeof mensaje === "object" && mensaje !== null) {
             // Si es un objeto, extraer propiedades
             mensajeSeguro = mensaje.mensaje ?? "Operación completada.";
             tipoSeguro = mensaje.tipo ?? "info";
             accionesSeguro = mensaje.acciones ?? null;
+            mostrarCancelarSeguro = mensaje.mostrarCancelar === undefined ? true : Boolean(mensaje.mostrarCancelar);
         } else {
             // Si es string, usar los parámetros
             mensajeSeguro = typeof mensaje === "string" && mensaje
@@ -185,11 +187,17 @@ export function SubastaEnVivo() {
                     : "Operación completada.";
             tipoSeguro = tipo;
             accionesSeguro = acciones;
+            mostrarCancelarSeguro = true;
         }
-        
-        setNotificacion({ mensaje: mensajeSeguro, tipo: tipoSeguro, acciones: accionesSeguro });
+
+        setNotificacion({ mensaje: mensajeSeguro, tipo: tipoSeguro, acciones: accionesSeguro, mostrarCancelar: mostrarCancelarSeguro });
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        
+
+        // Autocerrar notificaciones que no tienen acciones y explicitamente
+        if (!accionesSeguro && mostrarCancelarSeguro === false) {
+            timeoutRef.current = setTimeout(() => setNotificacion(null), 3500);
+        }
+
     }, []);
     
     const cerrarNotificacion = useCallback(() => {
@@ -312,10 +320,13 @@ export function SubastaEnVivo() {
                 String(ganador.id_usuario ?? ganador.id) !== String(comprador.id)
             ) {
                 mostrarNotificacion(
-                    `¡${ganador.nombre_usuario ?? "Alguien"} superó la puja con ${
-                        "$ " + Number(ganador.monto).toFixed(2)
-                    }!`,
-                    "warning"
+                    {
+                        mensaje: `¡${ganador.nombre_usuario ?? "Alguien"} superó la puja con ${
+                            "$ " + Number(ganador.monto).toFixed(2)
+                        }!`,
+                        tipo: "warning",
+                        mostrarCancelar: false
+                    }
                 );
             }
         }
@@ -405,7 +416,7 @@ export function SubastaEnVivo() {
                 // NO reseteamos montoPuja aquí — el useEffect de montoMinimo
                 // lo actualizará automáticamente cuando Ably traiga la nueva pujaMaxima.
                 // Así el campo siempre muestra el nuevo mínimo correcto en ambos navegadores.
-                mostrarNotificacion("¡Puja registrada exitosamente!", "success");
+                mostrarNotificacion({ mensaje: "¡Puja registrada exitosamente!", tipo: "success", mostrarCancelar: false });
             } else {
                 // El servidor respondió 2xx pero con error lógico
                 const msg = result?.mensaje ?? result?.error ?? result?.message;
