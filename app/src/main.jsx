@@ -80,7 +80,7 @@ const rutas = createBrowserRouter([
       {
         path:"pago-pendiente",
         element: (
-          <RoleRoute requiredRoles={["administrador"]}>
+          <RoleRoute requiredRoles={["administrador", "comprador"]}>
             <PagoPendiente />
           </RoleRoute>
         )
@@ -89,7 +89,7 @@ const rutas = createBrowserRouter([
       {
         path:"pago",
         element: (
-          <RoleRoute requiredRoles={["administrador"]}>
+          <RoleRoute requiredRoles={["administrador", "comprador"]}>
             <Pago />
           </RoleRoute>
         )
