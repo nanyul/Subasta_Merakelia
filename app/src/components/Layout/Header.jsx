@@ -137,7 +137,7 @@ export default function Header() {
     },
     {
       title: "Registrarse",
-      href: "/user/create",
+      href: "/user/register",
       icon: <UserPlus className="h-4 w-4" />,
       show: !isAuthenticated,
     },

@@ -69,7 +69,7 @@ const rutas = createBrowserRouter([
         element: <Login />
       },
       {
-        path: '/user/create',
+        path: '/user/register',
         element: <Register />
       },
       {path:"subasta/activas", element: <ListSubastas />},
